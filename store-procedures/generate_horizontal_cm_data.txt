@@ -1,0 +1,24 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `generate_horizontal_cm_data`()
+BEGIN
+DECLARE finished int default 0;
+DECLARE table_create varchar(5000) default 'Create Table xx_cm_horizontal (';
+DECLARE v_prod_week int default 0;
+DECLARE cal_weeks  CURSOR FOR  select prod_week from User_App.keysight_calendar
+where concat(prod_year,prod_week) between 2211 and 2215;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+OPEN cal_weeks;
+	weeks_query: LOOP
+    FETCH cal_weeks INTO v_prod_week;
+    IF finished = 1 THEN
+		LEAVE weeks_query;
+	END IF;
+    set table_create = concat(table_create ,'KR_WW', v_prod_week,' int,');
+    set table_create = concat(table_create ,'Commit_WW', v_prod_week,' int,');
+    set table_create = concat(table_create ,'Cum_Delta_WW', v_prod_week,' int,');
+    set table_create = concat(table_create ,'Exception_WW', v_prod_week,' int,');
+    set table_create = concat(table_create ,'Cause_Code_WW', v_prod_week,' varchar(255),');
+    set table_create = concat(table_create ,'Cause_Code_remark_WW', v_prod_week,' varchar(5000),');
+    END LOOP weeks_query;
+close cal_weeks;
+    select table_create;
+END

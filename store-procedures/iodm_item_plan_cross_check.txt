@@ -1,0 +1,17 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `iodm_item_plan_cross_check`()
+BEGIN
+	UPDATE B2B_UAT.forecast_plan join B2B_UAT.iodm_part_list
+                on B2B_UAT.forecast_plan.ori_part_number=B2B_UAT.iodm_part_list.part_name
+                set 
+                B2B_UAT.forecast_plan.active=
+                (case
+					when B2B_UAT.iodm_part_list.in_testing_flag='Yes' then 0
+					when B2B_UAT.iodm_part_list.in_testing_flag!='Yes' then 1
+                else 0
+                end);
+	DELETE B2B_UAT.forecast_plan FROM B2B_UAT.forecast_plan
+    WHERE NOT EXISTS (SELECT *
+                      FROM B2B_UAT.iodm_part_list
+                      WHERE B2B_UAT.iodm_part_list.part_name = B2B_UAT.forecast_plan.ori_part_number
+                     );
+END

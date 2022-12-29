@@ -1,0 +1,1019 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `Final_irp_summary`(
+IN source_supplier_name varchar(255)
+)
+BEGIN
+
+
+Drop table if exists B2B_UAT.final_irp_summary;
+
+create table B2B_UAT.final_irp_summary as
+select source_supplier,source_supplier_id,bu,product_line,product_family,
+0 as 'nongsa_week1_percent',0 as 'gsa_week1_percent',0 as 'system_week1_percent',0 as 'forecast_week1_percent',0 as 'total_week1_percent',
+if((ifnull(nongsa_Week2_IRP,0)!=0 and ifnull(nongsa_Week2_Commit,0)!=0),
+	if(((nongsa_Week2_Commit/nongsa_Week2_IRP)*100)>100,100,
+		if(((nongsa_Week2_Commit/nongsa_Week2_IRP)*100)<0,0,round((nongsa_Week2_Commit/nongsa_Week2_IRP)*100)))
+    ,0) as "nongsa_week2_percent",
+if((ifnull(gsa_Week2_IRP,0)!=0 and ifnull(gsa_Week2_Commit,0)!=0),
+	if(((gsa_Week2_Commit/gsa_Week2_IRP)*100)>100,100,
+		if(((gsa_Week2_Commit/gsa_Week2_IRP)*100)<0,0,round((gsa_Week2_Commit/gsa_Week2_IRP)*100)))
+    ,0) as "gsa_week2_percent",
+if((ifnull(system_Week2_IRP,0)!=0 and ifnull(system_Week2_Commit,0)!=0),
+	if(((system_Week2_Commit/system_Week2_IRP)*100)>100,100,
+		if(((system_Week2_Commit/system_Week2_IRP)*100)<0,0,round((system_Week2_Commit/system_Week2_IRP)*100)))
+    ,0) as "system_week2_percent",
+if((ifnull(forecast_Week2_IRP,0)!=0 and ifnull(forecast_Week2_Commit,0)!=0),
+	if(((forecast_Week2_Commit/forecast_Week2_IRP)*100)>100,100,
+		if(((forecast_Week2_Commit/forecast_Week2_IRP)*100)<0,0,round((forecast_Week2_Commit/forecast_Week2_IRP)*100)))
+    ,0) as "forecast_week2_percent",
+if(((ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0))!=0
+and ((ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))/
+		(ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))/
+		(ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))/
+		(ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0)))*100))),0) as "total_week2_percent",        
+if((ifnull(nongsa_Week3_IRP,0)!=0 and ifnull(nongsa_Week3_Commit,0)!=0),
+	if(((nongsa_Week3_Commit/nongsa_Week3_IRP)*100)>100,100,
+		if(((nongsa_Week3_Commit/nongsa_Week3_IRP)*100)<0,0,round((nongsa_Week3_Commit/nongsa_Week3_IRP)*100)))
+    ,0) as "nongsa_week3_percent",
+if((ifnull(gsa_Week3_IRP,0)!=0 and ifnull(gsa_Week3_Commit,0)!=0),
+	if(((gsa_Week3_Commit/gsa_Week3_IRP)*100)>100,100,
+		if(((gsa_Week3_Commit/gsa_Week3_IRP)*100)<0,0,round((gsa_Week3_Commit/gsa_Week3_IRP)*100)))
+    ,0) as "gsa_week3_percent",	
+if((ifnull(system_Week3_IRP,0)!=0 and ifnull(system_Week3_Commit,0)!=0),
+	if(((system_Week3_Commit/system_Week3_IRP)*100)>100,100,
+		if(((system_Week3_Commit/system_Week3_IRP)*100)<0,0,round((system_Week3_Commit/system_Week3_IRP)*100)))
+    ,0) as "system_week3_percent",
+if((ifnull(forecast_Week3_IRP,0)!=0 and ifnull(forecast_Week3_Commit,0)!=0),
+	if(((forecast_Week3_Commit/forecast_Week3_IRP)*100)>100,100,
+		if(((forecast_Week3_Commit/forecast_Week3_IRP)*100)<0,0,round((forecast_Week3_Commit/forecast_Week3_IRP)*100)))
+    ,0) as "forecast_week3_percent",
+if(((ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0))!=0
+and ((ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))/
+		(ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))/
+		(ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))/
+		(ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0)))*100))),0) as "total_week3_percent", 
+	
+if((ifnull(nongsa_Week4_IRP,0)!=0 and ifnull(nongsa_Week4_Commit,0)!=0),
+	if(((nongsa_Week4_Commit/nongsa_Week4_IRP)*100)>100,100,
+		if(((nongsa_Week4_Commit/nongsa_Week4_IRP)*100)<0,0,round((nongsa_Week4_Commit/nongsa_Week4_IRP)*100)))
+    ,0) as "nongsa_week4_percent",	
+if((ifnull(gsa_Week4_IRP,0)!=0 and ifnull(gsa_Week4_Commit,0)!=0),
+	if(((gsa_Week4_Commit/gsa_Week4_IRP)*100)>100,100,
+		if(((gsa_Week4_Commit/gsa_Week4_IRP)*100)<0,0,round((gsa_Week4_Commit/gsa_Week4_IRP)*100)))
+    ,0) as "gsa_week4_percent",
+if((ifnull(system_Week4_IRP,0)!=0 and ifnull(system_Week4_Commit,0)!=0),
+	if(((system_Week4_Commit/system_Week4_IRP)*100)>100,100,
+		if(((system_Week4_Commit/system_Week4_IRP)*100)<0,0,round((system_Week4_Commit/system_Week4_IRP)*100)))
+    ,0) as "system_week4_percent",
+if((ifnull(forecast_Week4_IRP,0)!=0 and ifnull(forecast_Week4_Commit,0)!=0),
+	if(((forecast_Week4_Commit/forecast_Week4_IRP)*100)>100,100,
+		if(((forecast_Week4_Commit/forecast_Week4_IRP)*100)<0,0,round((forecast_Week4_Commit/forecast_Week4_IRP)*100)))
+    ,0) as "forecast_week4_percent",
+if(((ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0))!=0
+and ((ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))/
+		(ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))/
+		(ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))/
+		(ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0)))*100))),0) as "total_week4_percent",
+
+if((ifnull(nongsa_Week5_IRP,0)!=0 and ifnull(nongsa_Week5_Commit,0)!=0),
+	if(((nongsa_Week5_Commit/nongsa_Week5_IRP)*100)>100,100,
+		if(((nongsa_Week5_Commit/nongsa_Week5_IRP)*100)<0,0,round((nongsa_Week5_Commit/nongsa_Week5_IRP)*100)))
+    ,0) as "nongsa_week5_percent",	
+if((ifnull(gsa_Week5_IRP,0)!=0 and ifnull(gsa_Week5_Commit,0)!=0),
+	if(((gsa_Week5_Commit/gsa_Week5_IRP)*100)>100,100,
+		if(((gsa_Week5_Commit/gsa_Week5_IRP)*100)<0,0,round((gsa_Week5_Commit/gsa_Week5_IRP)*100)))
+    ,0) as "gsa_week5_percent",
+if((ifnull(system_Week5_IRP,0)!=0 and ifnull(system_Week5_Commit,0)!=0),
+	if(((system_Week5_Commit/system_Week5_IRP)*100)>100,100,
+		if(((system_Week5_Commit/system_Week5_IRP)*100)<0,0,round((system_Week5_Commit/system_Week5_IRP)*100)))
+    ,0) as "system_week5_percent",
+if((ifnull(forecast_Week5_IRP,0)!=0 and ifnull(forecast_Week5_Commit,0)!=0),
+	if(((forecast_Week5_Commit/forecast_Week5_IRP)*100)>100,100,
+		if(((forecast_Week5_Commit/forecast_Week5_IRP)*100)<0,0,round((forecast_Week5_Commit/forecast_Week5_IRP)*100)))
+    ,0) as "forecast_week5_percent",
+if(((ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0))!=0
+and ((ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))/
+		(ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))/
+		(ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))/
+		(ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0)))*100))),0) as "total_week5_percent",
+        
+if((ifnull(nongsa_Week6_IRP,0)!=0 and ifnull(nongsa_Week6_Commit,0)!=0),
+	if(((nongsa_Week6_Commit/nongsa_Week6_IRP)*100)>100,100,
+		if(((nongsa_Week6_Commit/nongsa_Week6_IRP)*100)<0,0,round((nongsa_Week6_Commit/nongsa_Week6_IRP)*100)))
+    ,0) as "nongsa_week6_percent",	
+if((ifnull(gsa_Week6_IRP,0)!=0 and ifnull(gsa_Week6_Commit,0)!=0),
+	if(((gsa_Week6_Commit/gsa_Week6_IRP)*100)>100,100,
+		if(((gsa_Week6_Commit/gsa_Week6_IRP)*100)<0,0,round((gsa_Week6_Commit/gsa_Week6_IRP)*100)))
+    ,0) as "gsa_week6_percent",
+if((ifnull(system_Week6_IRP,0)!=0 and ifnull(system_Week6_Commit,0)!=0),
+	if(((system_Week6_Commit/system_Week6_IRP)*100)>100,100,
+		if(((system_Week6_Commit/system_Week6_IRP)*100)<0,0,round((system_Week6_Commit/system_Week6_IRP)*100)))
+    ,0) as "system_week6_percent",
+if((ifnull(forecast_Week6_IRP,0)!=0 and ifnull(forecast_Week6_Commit,0)!=0),
+	if(((forecast_Week6_Commit/forecast_Week6_IRP)*100)>100,100,
+		if(((forecast_Week6_Commit/forecast_Week6_IRP)*100)<0,0,round((forecast_Week6_Commit/forecast_Week6_IRP)*100)))
+    ,0) as "forecast_week6_percent",
+if(((ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0))!=0
+and ((ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))/
+		(ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))/
+		(ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))/
+		(ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0)))*100))),0) as "total_week6_percent",
+        
+if((ifnull(nongsa_Week7_IRP,0)!=0 and ifnull(nongsa_Week7_Commit,0)!=0),
+	if(((nongsa_Week7_Commit/nongsa_Week7_IRP)*100)>100,100,
+		if(((nongsa_Week7_Commit/nongsa_Week7_IRP)*100)<0,0,round((nongsa_Week7_Commit/nongsa_Week7_IRP)*100)))
+    ,0) as "nongsa_week7_percent",	
+if((ifnull(gsa_Week7_IRP,0)!=0 and ifnull(gsa_Week7_Commit,0)!=0),
+	if(((gsa_Week7_Commit/gsa_Week7_IRP)*100)>100,100,
+		if(((gsa_Week7_Commit/gsa_Week7_IRP)*100)<0,0,round((gsa_Week7_Commit/gsa_Week7_IRP)*100)))
+    ,0) as "gsa_week7_percent",
+if((ifnull(system_Week7_IRP,0)!=0 and ifnull(system_Week7_Commit,0)!=0),
+	if(((system_Week7_Commit/system_Week7_IRP)*100)>100,100,
+		if(((system_Week7_Commit/system_Week7_IRP)*100)<0,0,round((system_Week7_Commit/system_Week7_IRP)*100)))
+    ,0) as "system_week7_percent",
+if((ifnull(forecast_Week7_IRP,0)!=0 and ifnull(forecast_Week7_Commit,0)!=0),
+	if(((forecast_Week7_Commit/forecast_Week7_IRP)*100)>100,100,
+		if(((forecast_Week7_Commit/forecast_Week7_IRP)*100)<0,0,round((forecast_Week7_Commit/forecast_Week7_IRP)*100)))
+    ,0) as "forecast_week7_percent",
+if(((ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0))!=0
+and ((ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))/
+		(ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))/
+		(ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))/
+		(ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0)))*100))),0) as "total_week7_percent",
+        
+if((ifnull(nongsa_Week8_IRP,0)!=0 and ifnull(nongsa_Week8_Commit,0)!=0),
+	if(((nongsa_Week8_Commit/nongsa_Week8_IRP)*100)>100,100,
+		if(((nongsa_Week8_Commit/nongsa_Week8_IRP)*100)<0,0,round((nongsa_Week8_Commit/nongsa_Week8_IRP)*100)))
+    ,0) as "nongsa_week8_percent",	
+if((ifnull(gsa_Week8_IRP,0)!=0 and ifnull(gsa_Week8_Commit,0)!=0),
+	if(((gsa_Week8_Commit/gsa_Week8_IRP)*100)>100,100,
+		if(((gsa_Week8_Commit/gsa_Week8_IRP)*100)<0,0,round((gsa_Week8_Commit/gsa_Week8_IRP)*100)))
+    ,0) as "gsa_week8_percent",
+if((ifnull(system_Week8_IRP,0)!=0 and ifnull(system_Week8_Commit,0)!=0),
+	if(((system_Week8_Commit/system_Week8_IRP)*100)>100,100,
+		if(((system_Week8_Commit/system_Week8_IRP)*100)<0,0,round((system_Week8_Commit/system_Week8_IRP)*100)))
+    ,0) as "system_week8_percent",
+if((ifnull(forecast_Week8_IRP,0)!=0 and ifnull(forecast_Week8_Commit,0)!=0),
+	if(((forecast_Week8_Commit/forecast_Week8_IRP)*100)>100,100,
+		if(((forecast_Week8_Commit/forecast_Week8_IRP)*100)<0,0,round((forecast_Week8_Commit/forecast_Week8_IRP)*100)))
+    ,0) as "forecast_week8_percent",
+if(((ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0))!=0
+and ((ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))/
+		(ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))/
+		(ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))/
+		(ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0)))*100))),0) as "total_week8_percent",
+        
+if((ifnull(nongsa_Week9_IRP,0)!=0 and ifnull(nongsa_Week9_Commit,0)!=0),
+	if(((nongsa_Week9_Commit/nongsa_Week9_IRP)*100)>100,100,
+		if(((nongsa_Week9_Commit/nongsa_Week9_IRP)*100)<0,0,round((nongsa_Week9_Commit/nongsa_Week9_IRP)*100)))
+    ,0) as "nongsa_week9_percent",	
+if((ifnull(gsa_Week9_IRP,0)!=0 and ifnull(gsa_Week9_Commit,0)!=0),
+	if(((gsa_Week9_Commit/gsa_Week9_IRP)*100)>100,100,
+		if(((gsa_Week9_Commit/gsa_Week9_IRP)*100)<0,0,round((gsa_Week9_Commit/gsa_Week9_IRP)*100)))
+    ,0) as "gsa_week9_percent",
+if((ifnull(system_Week9_IRP,0)!=0 and ifnull(system_Week9_Commit,0)!=0),
+	if(((system_Week9_Commit/system_Week9_IRP)*100)>100,100,
+		if(((system_Week9_Commit/system_Week9_IRP)*100)<0,0,round((system_Week9_Commit/system_Week9_IRP)*100)))
+    ,0) as "system_week9_percent",
+if((ifnull(forecast_Week9_IRP,0)!=0 and ifnull(forecast_Week9_Commit,0)!=0),
+	if(((forecast_Week9_Commit/forecast_Week9_IRP)*100)>100,100,
+		if(((forecast_Week9_Commit/forecast_Week9_IRP)*100)<0,0,round((forecast_Week9_Commit/forecast_Week9_IRP)*100)))
+    ,0) as "forecast_week9_percent",
+if(((ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0))!=0
+and ((ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))/
+		(ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))/
+		(ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))/
+		(ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0)))*100))),0) as "total_week9_percent",
+        
+if((ifnull(nongsa_Week10_IRP,0)!=0 and ifnull(nongsa_Week10_Commit,0)!=0),
+	if(((nongsa_Week10_Commit/nongsa_Week10_IRP)*100)>100,100,
+		if(((nongsa_Week10_Commit/nongsa_Week10_IRP)*100)<0,0,round((nongsa_Week10_Commit/nongsa_Week10_IRP)*100)))
+    ,0) as "nongsa_week10_percent",	
+if((ifnull(gsa_Week10_IRP,0)!=0 and ifnull(gsa_Week10_Commit,0)!=0),
+	if(((gsa_Week10_Commit/gsa_Week10_IRP)*100)>100,100,
+		if(((gsa_Week10_Commit/gsa_Week10_IRP)*100)<0,0,round((gsa_Week10_Commit/gsa_Week10_IRP)*100)))
+    ,0) as "gsa_week10_percent",
+if((ifnull(system_Week10_IRP,0)!=0 and ifnull(system_Week10_Commit,0)!=0),
+	if(((system_Week10_Commit/system_Week10_IRP)*100)>100,100,
+		if(((system_Week10_Commit/system_Week10_IRP)*100)<0,0,round((system_Week10_Commit/system_Week10_IRP)*100)))
+    ,0) as "system_week10_percent",
+if((ifnull(forecast_Week10_IRP,0)!=0 and ifnull(forecast_Week10_Commit,0)!=0),
+	if(((forecast_Week10_Commit/forecast_Week10_IRP)*100)>100,100,
+		if(((forecast_Week10_Commit/forecast_Week10_IRP)*100)<0,0,round((forecast_Week10_Commit/forecast_Week10_IRP)*100)))
+    ,0) as "forecast_week10_percent",
+if(((ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0))!=0
+and ((ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))/
+		(ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))/
+		(ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))/
+		(ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0)))*100))),0) as "total_week10_percent",
+
+if((ifnull(nongsa_Week11_IRP,0)!=0 and ifnull(nongsa_Week11_Commit,0)!=0),
+	if(((nongsa_Week11_Commit/nongsa_Week11_IRP)*100)>100,100,
+		if(((nongsa_Week11_Commit/nongsa_Week11_IRP)*100)<0,0,round((nongsa_Week11_Commit/nongsa_Week11_IRP)*100)))
+    ,0) as "nongsa_week11_percent",	
+if((ifnull(gsa_Week11_IRP,0)!=0 and ifnull(gsa_Week11_Commit,0)!=0),
+	if(((gsa_Week11_Commit/gsa_Week11_IRP)*100)>100,100,
+		if(((gsa_Week11_Commit/gsa_Week11_IRP)*100)<0,0,round((gsa_Week11_Commit/gsa_Week11_IRP)*100)))
+    ,0) as "gsa_week11_percent",
+if((ifnull(system_Week11_IRP,0)!=0 and ifnull(system_Week11_Commit,0)!=0),
+	if(((system_Week11_Commit/system_Week11_IRP)*100)>100,100,
+		if(((system_Week11_Commit/system_Week11_IRP)*100)<0,0,round((system_Week11_Commit/system_Week11_IRP)*100)))
+    ,0) as "system_week11_percent",
+if((ifnull(forecast_Week11_IRP,0)!=0 and ifnull(forecast_Week11_Commit,0)!=0),
+	if(((forecast_Week11_Commit/forecast_Week11_IRP)*100)>100,100,
+		if(((forecast_Week11_Commit/forecast_Week11_IRP)*100)<0,0,round((forecast_Week11_Commit/forecast_Week11_IRP)*100)))
+    ,0) as "forecast_week11_percent",
+if(((ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0))!=0
+and ((ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))/
+		(ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))/
+		(ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))/
+		(ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0)))*100))),0) as "total_week11_percent",
+        
+if((ifnull(nongsa_Week12_IRP,0)!=0 and ifnull(nongsa_Week12_Commit,0)!=0),
+	if(((nongsa_Week12_Commit/nongsa_Week12_IRP)*100)>100,100,
+		if(((nongsa_Week12_Commit/nongsa_Week12_IRP)*100)<0,0,round((nongsa_Week12_Commit/nongsa_Week12_IRP)*100)))
+    ,0) as "nongsa_week12_percent",	
+if((ifnull(gsa_Week12_IRP,0)!=0 and ifnull(gsa_Week12_Commit,0)!=0),
+	if(((gsa_Week12_Commit/gsa_Week12_IRP)*100)>100,100,
+		if(((gsa_Week12_Commit/gsa_Week12_IRP)*100)<0,0,round((gsa_Week12_Commit/gsa_Week12_IRP)*100)))
+    ,0) as "gsa_week12_percent",
+if((ifnull(system_Week12_IRP,0)!=0 and ifnull(system_Week12_Commit,0)!=0),
+	if(((system_Week12_Commit/system_Week12_IRP)*100)>100,100,
+		if(((system_Week12_Commit/system_Week12_IRP)*100)<0,0,round((system_Week12_Commit/system_Week12_IRP)*100)))
+    ,0) as "system_week12_percent",
+if((ifnull(forecast_Week12_IRP,0)!=0 and ifnull(forecast_Week12_Commit,0)!=0),
+	if(((forecast_Week12_Commit/forecast_Week12_IRP)*100)>100,100,
+		if(((forecast_Week12_Commit/forecast_Week12_IRP)*100)<0,0,round((forecast_Week12_Commit/forecast_Week12_IRP)*100)))
+    ,0) as "forecast_week12_percent",
+if(((ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0))!=0
+and ((ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))/
+		(ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))/
+		(ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))/
+		(ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0)))*100))),0) as "total_week12_percent",
+
+
+if((ifnull(nongsa_Week13_IRP,0)!=0 and ifnull(nongsa_Week13_Commit,0)!=0),
+	if(((nongsa_Week13_Commit/nongsa_Week13_IRP)*100)>100,100,
+		if(((nongsa_Week13_Commit/nongsa_Week13_IRP)*100)<0,0,round((nongsa_Week13_Commit/nongsa_Week13_IRP)*100)))
+    ,0) as "nongsa_week13_percent",	
+if((ifnull(gsa_Week13_IRP,0)!=0 and ifnull(gsa_Week13_Commit,0)!=0),
+	if(((gsa_Week13_Commit/gsa_Week13_IRP)*100)>100,100,
+		if(((gsa_Week13_Commit/gsa_Week13_IRP)*100)<0,0,round((gsa_Week13_Commit/gsa_Week13_IRP)*100)))
+    ,0) as "gsa_week13_percent",
+if((ifnull(system_Week13_IRP,0)!=0 and ifnull(system_Week13_Commit,0)!=0),
+	if(((system_Week13_Commit/system_Week13_IRP)*100)>100,100,
+		if(((system_Week13_Commit/system_Week13_IRP)*100)<0,0,round((system_Week13_Commit/system_Week13_IRP)*100)))
+    ,0) as "system_week13_percent",
+if((ifnull(forecast_Week13_IRP,0)!=0 and ifnull(forecast_Week13_Commit,0)!=0),
+	if(((forecast_Week13_Commit/forecast_Week13_IRP)*100)>100,100,
+		if(((forecast_Week13_Commit/forecast_Week13_IRP)*100)<0,0,round((forecast_Week13_Commit/forecast_Week13_IRP)*100)))
+    ,0) as "forecast_week13_percent",
+if(((ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0))!=0
+and ((ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))!=0)),
+	if((((ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))/
+		(ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0)))*100)>100,100,
+			if((((ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))/
+		(ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0)))*100)<0,0,
+			round(((ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))/
+		(ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0)))*100))),0) as "total_week13_percent",
+        
+if((ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)+ifnull(nongsa_Week13_IRP,0))!=0 and 
+(ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0)+ifnull(nongsa_Week13_Commit,0))!=0,
+if((((ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0))/
+(ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)+ifnull(nongsa_Week13_IRP,0)))*100)>100,100,
+	if((((ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0)+ifnull(nongsa_Week13_Commit,0))/
+(ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)))*100)<0,0,
+round(((ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0)+ifnull(nongsa_Week13_Commit,0))/
+(ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)+ifnull(nongsa_Week13_IRP,0)))*100))),0) as 'overall_nongsa',
+
+if((ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(gsa_Week13_IRP,0))!=0 and 
+(ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(gsa_Week13_Commit,0))!=0,
+if((((ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0))/
+(ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(gsa_Week13_IRP,0)))*100)>100,100,
+	if((((ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(gsa_Week13_Commit,0))/
+(ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)))*100)<0,0,
+round(((ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(gsa_Week13_Commit,0))/
+(ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(gsa_Week13_IRP,0)))*100))),0) as 'overall_gsa',
+
+if((ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)+ifnull(system_Week13_IRP,0))!=0 and 
+(ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0)+ifnull(system_Week13_Commit,0))!=0,
+if((((ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0))/
+(ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)+ifnull(system_Week13_IRP,0)))*100)>100,100,
+	if((((ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0)+ifnull(system_Week13_Commit,0))/
+(ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)))*100)<0,0,
+round(((ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0)+ifnull(system_Week13_Commit,0))/
+(ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)+ifnull(system_Week13_IRP,0)))*100))),0) as 'overall_system',
+
+if((ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(forecast_Week13_IRP,0))!=0 and 
+(ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(forecast_Week13_Commit,0))!=0,
+if((((ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0))/
+(ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(forecast_Week13_IRP,0)))*100)>100,100,
+	if((((ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(forecast_Week13_Commit,0))/
+(ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)))*100)<0,0,
+round(((ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(forecast_Week13_Commit,0))/
+(ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(forecast_Week13_IRP,0)))*100))),0) as 'overall_forecast',
+
+
+if((ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)+ifnull(nongsa_Week13_IRP,0)+
+ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(gsa_Week13_IRP,0)+
+ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)+ifnull(system_Week13_IRP,0)+
+ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(forecast_Week13_IRP,0))!=0 and 
+
+(ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0)+ifnull(nongsa_Week13_Commit,0)+
+ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(gsa_Week13_Commit,0)+
+ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0)+ifnull(system_Week13_Commit,0)+
+ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(forecast_Week13_Commit,0))!=0,
+
+if((((ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0)+ifnull(nongsa_Week13_Commit,0)+
+ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(gsa_Week13_Commit,0)+
+ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0)+ifnull(system_Week13_Commit,0)+
+ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(forecast_Week13_Commit,0))/(ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)+ifnull(nongsa_Week13_IRP,0)+
+ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(gsa_Week13_IRP,0)+
+ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)+ifnull(system_Week13_IRP,0)+
+ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(forecast_Week13_IRP,0)))*100)>100,100,
+if((((ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0)+ifnull(nongsa_Week13_Commit,0)+
+ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(gsa_Week13_Commit,0)+
+ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0)+ifnull(system_Week13_Commit,0)+
+ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(forecast_Week13_Commit,0))/(ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)+ifnull(nongsa_Week13_IRP,0)+
+ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(gsa_Week13_IRP,0)+
+ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)+ifnull(system_Week13_IRP,0)+
+ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(forecast_Week13_IRP,0)))*100)<0,0,
+round(((ifnull(nongsa_Week1_Commit,0)+ifnull(nongsa_Week2_Commit,0)+ifnull(nongsa_Week3_Commit,0)+ifnull(nongsa_Week4_Commit,0)+ifnull(nongsa_Week5_Commit,0)+ifnull(nongsa_Week6_Commit,0)+ifnull(nongsa_Week7_Commit,0)+ifnull(
+nongsa_Week8_Commit,0)+ifnull(nongsa_Week9_Commit,0)+ifnull(nongsa_Week10_Commit,0)+ifnull(nongsa_Week11_Commit,0)+ifnull(nongsa_Week12_Commit,0)+ifnull(nongsa_Week13_Commit,0)+
+ifnull(gsa_Week1_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(
+gsa_Week8_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(gsa_Week13_Commit,0)+
+ifnull(system_Week1_Commit,0)+ifnull(system_Week2_Commit,0)+ifnull(system_Week3_Commit,0)+ifnull(system_Week4_Commit,0)+ifnull(system_Week5_Commit,0)+ifnull(system_Week6_Commit,0)+ifnull(system_Week7_Commit,0)+ifnull(
+system_Week8_Commit,0)+ifnull(system_Week9_Commit,0)+ifnull(system_Week10_Commit,0)+ifnull(system_Week11_Commit,0)+ifnull(system_Week12_Commit,0)+ifnull(system_Week13_Commit,0)+
+ifnull(forecast_Week1_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(
+forecast_Week8_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(forecast_Week13_Commit,0))/(ifnull(nongsa_Week1_IRP,0)+ifnull(nongsa_Week2_IRP,0)+ifnull(nongsa_Week3_IRP,0)+ifnull(nongsa_Week4_IRP,0)+ifnull(nongsa_Week5_IRP,0)+ifnull(nongsa_Week6_IRP,0)+ifnull(nongsa_Week7_IRP,0)+
+ifnull(nongsa_Week8_IRP,0)+ifnull(nongsa_Week9_IRP,0)+ifnull(nongsa_Week10_IRP,0)+ifnull(nongsa_Week11_IRP,0)+ifnull(nongsa_Week12_IRP,0)+ifnull(nongsa_Week13_IRP,0)+
+ifnull(gsa_Week1_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(gsa_Week7_IRP,0)+
+ifnull(gsa_Week8_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(gsa_Week13_IRP,0)+
+ifnull(system_Week1_IRP,0)+ifnull(system_Week2_IRP,0)+ifnull(system_Week3_IRP,0)+ifnull(system_Week4_IRP,0)+ifnull(system_Week5_IRP,0)+ifnull(system_Week6_IRP,0)+ifnull(system_Week7_IRP,0)+
+ifnull(system_Week8_IRP,0)+ifnull(system_Week9_IRP,0)+ifnull(system_Week10_IRP,0)+ifnull(system_Week11_IRP,0)+ifnull(system_Week12_IRP,0)+ifnull(system_Week13_IRP,0)+
+ifnull(forecast_Week1_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(forecast_Week7_IRP,0)+
+ifnull(forecast_Week8_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(forecast_Week13_IRP,0)))*100))),0) as "overall_total"
+
+
+from B2B_UAT.IRP_summary group by source_supplier,bu,product_line,product_family
+union
+(select '' as source_supplier,'' as source_supplier_id,'' as  bu,'' as  product_line,'Total' as product_family,
+round(1.0-1.0,1) as 'nongsa_week1_percent',0.0 as 'gsa_week1_percent',0.0 as 'system_week1_percent',0.0 as 'forecast_week1_percent',0.0 as 'overall_week1_percent',
+if(sum(ifnull(nongsa_Week2_Commit,0))!=0 and sum(ifnull(nongsa_Week2_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week2_Commit,0))/sum(ifnull(nongsa_Week2_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week2_Commit,0))/sum(ifnull(nongsa_Week2_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week2_Commit,0))/sum(ifnull(nongsa_Week2_IRP,0)))*100))),0) as 'nongsa_week2_percent',
+if(sum(ifnull(gsa_Week2_Commit,0))!=0 and sum(ifnull(gsa_Week2_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week2_Commit,0))/sum(ifnull(gsa_Week2_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week2_Commit,0))/sum(ifnull(gsa_Week2_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week2_Commit,0))/sum(ifnull(gsa_Week2_IRP,0)))*100))),0) as 'gsa_week2_percent',
+if(sum(ifnull(system_Week2_Commit,0))!=0 and sum(ifnull(system_Week2_IRP,0))!=0,
+if(((sum(ifnull(system_Week2_Commit,0))/sum(ifnull(system_Week2_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week2_Commit,0))/sum(ifnull(system_Week2_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week2_Commit,0))/sum(ifnull(system_Week2_IRP,0)))*100))),0) as 'system_week2_percent',
+if(sum(ifnull(forecast_Week2_Commit,0))!=0 and sum(ifnull(forecast_Week2_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week2_Commit,0))/sum(ifnull(forecast_Week2_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week2_Commit,0))/sum(ifnull(forecast_Week2_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week2_Commit,0))/sum(ifnull(forecast_Week2_IRP,0)))*100))),0) as 'forecast_week2_percent',
+if(sum(ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))/
+	sum(ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))/
+sum(ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week2_Commit,0)+ifnull(gsa_Week2_Commit,0)+ifnull(forecast_Week2_Commit,0)+ifnull(system_Week2_Commit,0))/
+sum(ifnull(nongsa_Week2_IRP,0)+ifnull(gsa_Week2_IRP,0)+ifnull(forecast_Week2_IRP,0)+ifnull(system_Week2_IRP,0)))*100))),0) as 'total_week2_percent',
+
+if(sum(ifnull(nongsa_Week3_Commit,0))!=0 and sum(ifnull(nongsa_Week3_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week3_Commit,0))/sum(ifnull(nongsa_Week3_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week3_Commit,0))/sum(ifnull(nongsa_Week3_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week3_Commit,0))/sum(ifnull(nongsa_Week3_IRP,0)))*100))),0) as 'nongsa_week3_percent',
+if(sum(ifnull(gsa_Week3_Commit,0))!=0 and sum(ifnull(gsa_Week3_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week3_Commit,0))/sum(ifnull(gsa_Week3_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week3_Commit,0))/sum(ifnull(gsa_Week3_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week3_Commit,0))/sum(ifnull(gsa_Week3_IRP,0)))*100))),0) as 'gsa_week3_percent',
+if(sum(ifnull(system_Week3_Commit,0))!=0 and sum(ifnull(system_Week3_IRP,0))!=0,
+if(((sum(ifnull(system_Week3_Commit,0))/sum(ifnull(system_Week3_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week3_Commit,0))/sum(ifnull(system_Week3_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week3_Commit,0))/sum(ifnull(system_Week3_IRP,0)))*100))),0) as 'system_week3_percent',
+if(sum(ifnull(forecast_Week3_Commit,0))!=0 and sum(ifnull(forecast_Week3_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week3_Commit,0))/sum(ifnull(forecast_Week3_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week3_Commit,0))/sum(ifnull(forecast_Week3_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week3_Commit,0))/sum(ifnull(forecast_Week3_IRP,0)))*100))),0) as 'forecast_week3_percent',
+if(sum(ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))/
+	sum(ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))/
+sum(ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week3_Commit,0)+ifnull(gsa_Week3_Commit,0)+ifnull(forecast_Week3_Commit,0)+ifnull(system_Week3_Commit,0))/
+sum(ifnull(nongsa_Week3_IRP,0)+ifnull(gsa_Week3_IRP,0)+ifnull(forecast_Week3_IRP,0)+ifnull(system_Week3_IRP,0)))*100))),0) as 'total_week3_percent',
+
+
+if(sum(ifnull(nongsa_Week4_Commit,0))!=0 and sum(ifnull(nongsa_Week4_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week4_Commit,0))/sum(ifnull(nongsa_Week4_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week4_Commit,0))/sum(ifnull(nongsa_Week4_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week4_Commit,0))/sum(ifnull(nongsa_Week4_IRP,0)))*100))),0) as 'nongsa_week4_percent',
+if(sum(ifnull(gsa_Week4_Commit,0))!=0 and sum(ifnull(gsa_Week4_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week4_Commit,0))/sum(ifnull(gsa_Week4_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week4_Commit,0))/sum(ifnull(gsa_Week4_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week4_Commit,0))/sum(ifnull(gsa_Week4_IRP,0)))*100))),0) as 'gsa_week4_percent',
+if(sum(ifnull(system_Week4_Commit,0))!=0 and sum(ifnull(system_Week4_IRP,0))!=0,
+if(((sum(ifnull(system_Week4_Commit,0))/sum(ifnull(system_Week4_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week4_Commit,0))/sum(ifnull(system_Week4_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week4_Commit,0))/sum(ifnull(system_Week4_IRP,0)))*100))),0) as 'system_week4_percent',
+if(sum(ifnull(forecast_Week4_Commit,0))!=0 and sum(ifnull(forecast_Week4_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week4_Commit,0))/sum(ifnull(forecast_Week4_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week4_Commit,0))/sum(ifnull(forecast_Week4_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week4_Commit,0))/sum(ifnull(forecast_Week4_IRP,0)))*100))),0) as 'forecast_week4_percent',
+if(sum(ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))/
+	sum(ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))/
+sum(ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week4_Commit,0)+ifnull(gsa_Week4_Commit,0)+ifnull(forecast_Week4_Commit,0)+ifnull(system_Week4_Commit,0))/
+sum(ifnull(nongsa_Week4_IRP,0)+ifnull(gsa_Week4_IRP,0)+ifnull(forecast_Week4_IRP,0)+ifnull(system_Week4_IRP,0)))*100))),0) as 'total_week4_percent',
+
+
+if(sum(ifnull(nongsa_Week5_Commit,0))!=0 and sum(ifnull(nongsa_Week5_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week5_Commit,0))/sum(ifnull(nongsa_Week5_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week5_Commit,0))/sum(ifnull(nongsa_Week5_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week5_Commit,0))/sum(ifnull(nongsa_Week5_IRP,0)))*100))),0) as 'nongsa_week5_percent',
+if(sum(ifnull(gsa_Week5_Commit,0))!=0 and sum(ifnull(gsa_Week5_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week5_Commit,0))/sum(ifnull(gsa_Week5_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week5_Commit,0))/sum(ifnull(gsa_Week5_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week5_Commit,0))/sum(ifnull(gsa_Week5_IRP,0)))*100))),0) as 'gsa_week5_percent',
+if(sum(ifnull(system_Week5_Commit,0))!=0 and sum(ifnull(system_Week5_IRP,0))!=0,
+if(((sum(ifnull(system_Week5_Commit,0))/sum(ifnull(system_Week5_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week5_Commit,0))/sum(ifnull(system_Week5_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week5_Commit,0))/sum(ifnull(system_Week5_IRP,0)))*100))),0) as 'system_week5_percent',
+if(sum(ifnull(forecast_Week5_Commit,0))!=0 and sum(ifnull(forecast_Week5_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week5_Commit,0))/sum(ifnull(forecast_Week5_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week5_Commit,0))/sum(ifnull(forecast_Week5_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week5_Commit,0))/sum(ifnull(forecast_Week5_IRP,0)))*100))),0) as 'forecast_week5_percent',
+if(sum(ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))/
+	sum(ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))/
+sum(ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week5_Commit,0)+ifnull(gsa_Week5_Commit,0)+ifnull(forecast_Week5_Commit,0)+ifnull(system_Week5_Commit,0))/
+sum(ifnull(nongsa_Week5_IRP,0)+ifnull(gsa_Week5_IRP,0)+ifnull(forecast_Week5_IRP,0)+ifnull(system_Week5_IRP,0)))*100))),0) as 'total_week5_percent',
+
+
+if(sum(ifnull(nongsa_Week6_Commit,0))!=0 and sum(ifnull(nongsa_Week6_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week6_Commit,0))/sum(ifnull(nongsa_Week6_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week6_Commit,0))/sum(ifnull(nongsa_Week6_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week6_Commit,0))/sum(ifnull(nongsa_Week6_IRP,0)))*100))),0) as 'nongsa_week6_percent',
+if(sum(ifnull(gsa_Week6_Commit,0))!=0 and sum(ifnull(gsa_Week6_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week6_Commit,0))/sum(ifnull(gsa_Week6_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week6_Commit,0))/sum(ifnull(gsa_Week6_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week6_Commit,0))/sum(ifnull(gsa_Week6_IRP,0)))*100))),0) as 'gsa_week6_percent',
+if(sum(ifnull(system_Week6_Commit,0))!=0 and sum(ifnull(system_Week6_IRP,0))!=0,
+if(((sum(ifnull(system_Week6_Commit,0))/sum(ifnull(system_Week6_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week6_Commit,0))/sum(ifnull(system_Week6_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week6_Commit,0))/sum(ifnull(system_Week6_IRP,0)))*100))),0) as 'system_week6_percent',
+if(sum(ifnull(forecast_Week6_Commit,0))!=0 and sum(ifnull(forecast_Week6_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week6_Commit,0))/sum(ifnull(forecast_Week6_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week6_Commit,0))/sum(ifnull(forecast_Week6_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week6_Commit,0))/sum(ifnull(forecast_Week6_IRP,0)))*100))),0) as 'forecast_week6_percent',
+if(sum(ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))/
+	sum(ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))/
+sum(ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week6_Commit,0)+ifnull(gsa_Week6_Commit,0)+ifnull(forecast_Week6_Commit,0)+ifnull(system_Week6_Commit,0))/
+sum(ifnull(nongsa_Week6_IRP,0)+ifnull(gsa_Week6_IRP,0)+ifnull(forecast_Week6_IRP,0)+ifnull(system_Week6_IRP,0)))*100))),0) as 'total_week6_percent',
+
+
+if(sum(ifnull(nongsa_Week7_Commit,0))!=0 and sum(ifnull(nongsa_Week7_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week7_Commit,0))/sum(ifnull(nongsa_Week7_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week7_Commit,0))/sum(ifnull(nongsa_Week7_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week7_Commit,0))/sum(ifnull(nongsa_Week7_IRP,0)))*100))),0) as 'nongsa_week7_percent',
+if(sum(ifnull(gsa_Week7_Commit,0))!=0 and sum(ifnull(gsa_Week7_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week7_Commit,0))/sum(ifnull(gsa_Week7_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week7_Commit,0))/sum(ifnull(gsa_Week7_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week7_Commit,0))/sum(ifnull(gsa_Week7_IRP,0)))*100))),0) as 'gsa_week7_percent',
+if(sum(ifnull(system_Week7_Commit,0))!=0 and sum(ifnull(system_Week7_IRP,0))!=0,
+if(((sum(ifnull(system_Week7_Commit,0))/sum(ifnull(system_Week7_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week7_Commit,0))/sum(ifnull(system_Week7_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week7_Commit,0))/sum(ifnull(system_Week7_IRP,0)))*100))),0) as 'system_week7_percent',
+if(sum(ifnull(forecast_Week7_Commit,0))!=0 and sum(ifnull(forecast_Week7_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week7_Commit,0))/sum(ifnull(forecast_Week7_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week7_Commit,0))/sum(ifnull(forecast_Week7_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week7_Commit,0))/sum(ifnull(forecast_Week7_IRP,0)))*100))),0) as 'forecast_week7_percent',
+if(sum(ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))/
+	sum(ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))/
+sum(ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week7_Commit,0)+ifnull(gsa_Week7_Commit,0)+ifnull(forecast_Week7_Commit,0)+ifnull(system_Week7_Commit,0))/
+sum(ifnull(nongsa_Week7_IRP,0)+ifnull(gsa_Week7_IRP,0)+ifnull(forecast_Week7_IRP,0)+ifnull(system_Week7_IRP,0)))*100))),0) as 'total_week7_percent',
+
+
+if(sum(ifnull(nongsa_Week8_Commit,0))!=0 and sum(ifnull(nongsa_Week8_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week8_Commit,0))/sum(ifnull(nongsa_Week8_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week8_Commit,0))/sum(ifnull(nongsa_Week8_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week8_Commit,0))/sum(ifnull(nongsa_Week8_IRP,0)))*100))),0) as 'nongsa_week8_percent',
+if(sum(ifnull(gsa_Week8_Commit,0))!=0 and sum(ifnull(gsa_Week8_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week8_Commit,0))/sum(ifnull(gsa_Week8_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week8_Commit,0))/sum(ifnull(gsa_Week8_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week8_Commit,0))/sum(ifnull(gsa_Week8_IRP,0)))*100))),0) as 'gsa_week8_percent',
+if(sum(ifnull(system_Week8_Commit,0))!=0 and sum(ifnull(system_Week8_IRP,0))!=0,
+if(((sum(ifnull(system_Week8_Commit,0))/sum(ifnull(system_Week8_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week8_Commit,0))/sum(ifnull(system_Week8_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week8_Commit,0))/sum(ifnull(system_Week8_IRP,0)))*100))),0) as 'system_week8_percent',
+if(sum(ifnull(forecast_Week8_Commit,0))!=0 and sum(ifnull(forecast_Week8_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week8_Commit,0))/sum(ifnull(forecast_Week8_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week8_Commit,0))/sum(ifnull(forecast_Week8_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week8_Commit,0))/sum(ifnull(forecast_Week8_IRP,0)))*100))),0) as 'forecast_week8_percent',
+if(sum(ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))/
+	sum(ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))/
+sum(ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week8_Commit,0)+ifnull(gsa_Week8_Commit,0)+ifnull(forecast_Week8_Commit,0)+ifnull(system_Week8_Commit,0))/
+sum(ifnull(nongsa_Week8_IRP,0)+ifnull(gsa_Week8_IRP,0)+ifnull(forecast_Week8_IRP,0)+ifnull(system_Week8_IRP,0)))*100))),0) as 'total_week8_percent',
+
+
+if(sum(ifnull(nongsa_Week9_Commit,0))!=0 and sum(ifnull(nongsa_Week9_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week9_Commit,0))/sum(ifnull(nongsa_Week9_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week9_Commit,0))/sum(ifnull(nongsa_Week9_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week9_Commit,0))/sum(ifnull(nongsa_Week9_IRP,0)))*100))),0) as 'nongsa_week9_percent',
+if(sum(ifnull(gsa_Week9_Commit,0))!=0 and sum(ifnull(gsa_Week9_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week9_Commit,0))/sum(ifnull(gsa_Week9_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week9_Commit,0))/sum(ifnull(gsa_Week9_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week9_Commit,0))/sum(ifnull(gsa_Week9_IRP,0)))*100))),0) as 'gsa_week9_percent',
+if(sum(ifnull(system_Week9_Commit,0))!=0 and sum(ifnull(system_Week9_IRP,0))!=0,
+if(((sum(ifnull(system_Week9_Commit,0))/sum(ifnull(system_Week9_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week9_Commit,0))/sum(ifnull(system_Week9_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week9_Commit,0))/sum(ifnull(system_Week9_IRP,0)))*100))),0) as 'system_week9_percent',
+if(sum(ifnull(forecast_Week9_Commit,0))!=0 and sum(ifnull(forecast_Week9_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week9_Commit,0))/sum(ifnull(forecast_Week9_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week9_Commit,0))/sum(ifnull(forecast_Week9_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week9_Commit,0))/sum(ifnull(forecast_Week9_IRP,0)))*100))),0) as 'forecast_week9_percent',
+if(sum(ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))/
+	sum(ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))/
+sum(ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week9_Commit,0)+ifnull(gsa_Week9_Commit,0)+ifnull(forecast_Week9_Commit,0)+ifnull(system_Week9_Commit,0))/
+sum(ifnull(nongsa_Week9_IRP,0)+ifnull(gsa_Week9_IRP,0)+ifnull(forecast_Week9_IRP,0)+ifnull(system_Week9_IRP,0)))*100))),0) as 'total_week9_percent',
+
+
+if(sum(ifnull(nongsa_Week10_Commit,0))!=0 and sum(ifnull(nongsa_Week10_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week10_Commit,0))/sum(ifnull(nongsa_Week10_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week10_Commit,0))/sum(ifnull(nongsa_Week10_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week10_Commit,0))/sum(ifnull(nongsa_Week10_IRP,0)))*100))),0) as 'nongsa_week10_percent',
+if(sum(ifnull(gsa_Week10_Commit,0))!=0 and sum(ifnull(gsa_Week10_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week10_Commit,0))/sum(ifnull(gsa_Week10_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week10_Commit,0))/sum(ifnull(gsa_Week10_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week10_Commit,0))/sum(ifnull(gsa_Week10_IRP,0)))*100))),0) as 'gsa_week10_percent',
+if(sum(ifnull(system_Week10_Commit,0))!=0 and sum(ifnull(system_Week10_IRP,0))!=0,
+if(((sum(ifnull(system_Week10_Commit,0))/sum(ifnull(system_Week10_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week10_Commit,0))/sum(ifnull(system_Week10_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week10_Commit,0))/sum(ifnull(system_Week10_IRP,0)))*100))),0) as 'system_week10_percent',
+if(sum(ifnull(forecast_Week10_Commit,0))!=0 and sum(ifnull(forecast_Week10_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week10_Commit,0))/sum(ifnull(forecast_Week10_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week10_Commit,0))/sum(ifnull(forecast_Week10_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week10_Commit,0))/sum(ifnull(forecast_Week10_IRP,0)))*100))),0) as 'forecast_week10_percent',
+if(sum(ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))/
+	sum(ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))/
+sum(ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week10_Commit,0)+ifnull(gsa_Week10_Commit,0)+ifnull(forecast_Week10_Commit,0)+ifnull(system_Week10_Commit,0))/
+sum(ifnull(nongsa_Week10_IRP,0)+ifnull(gsa_Week10_IRP,0)+ifnull(forecast_Week10_IRP,0)+ifnull(system_Week10_IRP,0)))*100))),0) as 'total_week10_percent',
+
+if(sum(ifnull(nongsa_Week11_Commit,0))!=0 and sum(ifnull(nongsa_Week11_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week11_Commit,0))/sum(ifnull(nongsa_Week11_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week11_Commit,0))/sum(ifnull(nongsa_Week11_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week11_Commit,0))/sum(ifnull(nongsa_Week11_IRP,0)))*100))),0) as 'nongsa_week11_percent',
+if(sum(ifnull(gsa_Week11_Commit,0))!=0 and sum(ifnull(gsa_Week11_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week11_Commit,0))/sum(ifnull(gsa_Week11_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week11_Commit,0))/sum(ifnull(gsa_Week11_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week11_Commit,0))/sum(ifnull(gsa_Week11_IRP,0)))*100))),0) as 'gsa_week11_percent',
+if(sum(ifnull(system_Week11_Commit,0))!=0 and sum(ifnull(system_Week11_IRP,0))!=0,
+if(((sum(ifnull(system_Week11_Commit,0))/sum(ifnull(system_Week11_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week11_Commit,0))/sum(ifnull(system_Week11_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week11_Commit,0))/sum(ifnull(system_Week11_IRP,0)))*100))),0) as 'system_week11_percent',
+if(sum(ifnull(forecast_Week11_Commit,0))!=0 and sum(ifnull(forecast_Week11_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week11_Commit,0))/sum(ifnull(forecast_Week11_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week11_Commit,0))/sum(ifnull(forecast_Week11_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week11_Commit,0))/sum(ifnull(forecast_Week11_IRP,0)))*100))),0) as 'forecast_week11_percent',
+if(sum(ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))/
+	sum(ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))/
+sum(ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week11_Commit,0)+ifnull(gsa_Week11_Commit,0)+ifnull(forecast_Week11_Commit,0)+ifnull(system_Week11_Commit,0))/
+sum(ifnull(nongsa_Week11_IRP,0)+ifnull(gsa_Week11_IRP,0)+ifnull(forecast_Week11_IRP,0)+ifnull(system_Week11_IRP,0)))*100))),0) as 'total_week11_percent',
+
+if(sum(ifnull(nongsa_Week12_Commit,0))!=0 and sum(ifnull(nongsa_Week12_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week12_Commit,0))/sum(ifnull(nongsa_Week12_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week12_Commit,0))/sum(ifnull(nongsa_Week12_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week12_Commit,0))/sum(ifnull(nongsa_Week12_IRP,0)))*100))),0) as 'nongsa_week12_percent',
+if(sum(ifnull(gsa_Week12_Commit,0))!=0 and sum(ifnull(gsa_Week12_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week12_Commit,0))/sum(ifnull(gsa_Week12_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week12_Commit,0))/sum(ifnull(gsa_Week12_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week12_Commit,0))/sum(ifnull(gsa_Week12_IRP,0)))*100))),0) as 'gsa_week12_percent',
+if(sum(ifnull(system_Week12_Commit,0))!=0 and sum(ifnull(system_Week12_IRP,0))!=0,
+if(((sum(ifnull(system_Week12_Commit,0))/sum(ifnull(system_Week12_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week12_Commit,0))/sum(ifnull(system_Week12_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week12_Commit,0))/sum(ifnull(system_Week12_IRP,0)))*100))),0) as 'system_week12_percent',
+if(sum(ifnull(forecast_Week12_Commit,0))!=0 and sum(ifnull(forecast_Week12_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week12_Commit,0))/sum(ifnull(forecast_Week12_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week12_Commit,0))/sum(ifnull(forecast_Week12_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week12_Commit,0))/sum(ifnull(forecast_Week12_IRP,0)))*100))),0) as 'forecast_week12_percent',
+if(sum(ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))/
+	sum(ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))/
+sum(ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week12_Commit,0)+ifnull(gsa_Week12_Commit,0)+ifnull(forecast_Week12_Commit,0)+ifnull(system_Week12_Commit,0))/
+sum(ifnull(nongsa_Week12_IRP,0)+ifnull(gsa_Week12_IRP,0)+ifnull(forecast_Week12_IRP,0)+ifnull(system_Week12_IRP,0)))*100))),0) as 'total_week12_percent',
+
+
+if(sum(ifnull(nongsa_Week13_Commit,0))!=0 and sum(ifnull(nongsa_Week13_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week13_Commit,0))/sum(ifnull(nongsa_Week13_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week13_Commit,0))/sum(ifnull(nongsa_Week13_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week13_Commit,0))/sum(ifnull(nongsa_Week13_IRP,0)))*100))),0) as 'nongsa_week13_percent',
+if(sum(ifnull(gsa_Week13_Commit,0))!=0 and sum(ifnull(gsa_Week13_IRP,0))!=0,
+if(((sum(ifnull(gsa_Week13_Commit,0))/sum(ifnull(gsa_Week13_IRP,0)))*100)>100,100,
+if(((sum(ifnull(gsa_Week13_Commit,0))/sum(ifnull(gsa_Week13_IRP,0)))*100)<0,0,
+round((sum(ifnull(gsa_Week13_Commit,0))/sum(ifnull(gsa_Week13_IRP,0)))*100))),0) as 'gsa_week13_percent',
+if(sum(ifnull(system_Week13_Commit,0))!=0 and sum(ifnull(system_Week13_IRP,0))!=0,
+if(((sum(ifnull(system_Week13_Commit,0))/sum(ifnull(system_Week13_IRP,0)))*100)>100,100,
+if(((sum(ifnull(system_Week13_Commit,0))/sum(ifnull(system_Week13_IRP,0)))*100)<0,0,
+round((sum(ifnull(system_Week13_Commit,0))/sum(ifnull(system_Week13_IRP,0)))*100))),0) as 'system_week13_percent',
+if(sum(ifnull(forecast_Week13_Commit,0))!=0 and sum(ifnull(forecast_Week13_IRP,0))!=0,
+if(((sum(ifnull(forecast_Week13_Commit,0))/sum(ifnull(forecast_Week13_IRP,0)))*100)>100,100,
+if(((sum(ifnull(forecast_Week13_Commit,0))/sum(ifnull(forecast_Week13_IRP,0)))*100)<0,0,
+round((sum(ifnull(forecast_Week13_Commit,0))/sum(ifnull(forecast_Week13_IRP,0)))*100))),0) as 'forecast_week13_percent',
+if(sum(ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))!=0 and 
+sum(ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0))!=0,
+if(((sum(ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))/
+	sum(ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0)))*100)>100,100,
+if(((sum(ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))/
+sum(ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0)))*100)<0,0,
+round((sum(ifnull(nongsa_Week13_Commit,0)+ifnull(gsa_Week13_Commit,0)+ifnull(forecast_Week13_Commit,0)+ifnull(system_Week13_Commit,0))/
+sum(ifnull(nongsa_Week13_IRP,0)+ifnull(gsa_Week13_IRP,0)+ifnull(forecast_Week13_IRP,0)+ifnull(system_Week13_IRP,0)))*100))),0) as 'total_week13_percent',
+
+
+if((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0)))!=0 and 
+(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0)))!=0,
+	if(((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+	sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+	sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+	sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0)))/
+	(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+	sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+	sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+	sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0))))*100>100,100,
+		if(((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+		sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+		sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+		sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0)))/
+		(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+		sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+		sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+		sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0))))*100<0,0,
+			round((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+			sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+			sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+			sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0)))/
+			(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+			sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+			sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+			sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0)))*100))),0) as 'overall_nongsa_percentage',
+if((sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0)))!=0 and 
+(sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0)))!=0,
+	if(((sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+	sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+	sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+	sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0)))/
+	(sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+	sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+	sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+	sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0))))*100>100,100,
+		if(((sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+		sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+		sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+		sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0)))/
+		(sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+		sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+		sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+		sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0))))*100<0,0,
+			round((sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+			sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+			sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+			sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0)))/
+			(sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+			sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+			sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+			sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0)))*100))),0) as 'overall_gsa_percentage',
+if((sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))!=0 and 
+(sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0)))!=0,
+	if(((sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+	sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+	sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+	sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))/
+	(sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+	sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+	sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+	sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0))))*100>100,100,
+		if(((sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+		sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+		sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+		sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))/
+		(sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+		sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+		sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+		sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0))))*100<0,0,
+			round((sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+			sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+			sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+			sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))/
+			(sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+			sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+			sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+			sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0)))*100))),0) as 'overall_system_percentage',
+if((sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0)))!=0 and 
+(sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0)))!=0,
+	if(((sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+	sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+	sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+	sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0)))/
+	(sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+	sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+	sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+	sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0))))*100>100,100,
+		if(((sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+		sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+		sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+		sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0)))/
+		(sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+		sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+		sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+		sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0))))*100<0,0,
+			round((sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+			sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+			sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+			sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0)))/
+			(sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+			sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+			sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+			sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0)))*100))),0) as 'overall_forecast_percentage',
+            
+            if(((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+	sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+	sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+	sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0))+
+	sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+	sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+	sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+	sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0))+
+	sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+	sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+	sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+	sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0))+
+	sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+	sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+	sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+	sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))!=0 and
+	(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+	sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+	sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+	sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0))+
+	sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+	sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+	sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+	sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0))+
+	sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+	sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+	sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+	sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0))+
+	sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+	sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+	sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+	sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0)))!=0),
+	if(((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+		sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+		sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+		sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0))+
+		sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+		sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+		sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+		sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0))+
+		sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+		sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+		sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+		sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0))+
+		sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+		sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+		sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+		sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))/
+		(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+		sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+		sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+		sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0))+
+		sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+		sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+		sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+		sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0))+
+		sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+		sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+		sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+		sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0))+
+		sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+		sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+		sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+		sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0)))*100)>100,100,
+			if(((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+				sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+				sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+				sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0))+
+				sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+				sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+				sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+				sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0))+
+				sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+				sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+				sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+				sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0))+
+				sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+				sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+				sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+				sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))/
+				(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+				sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+				sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+				sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0))+
+				sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+				sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+				sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+				sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0))+
+				sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+				sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+				sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+				sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0))+
+				sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+				sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+				sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+				sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0)))*100)<0,0,
+					round((sum(ifnull(nongsa_Week2_Commit,0))+sum(ifnull(nongsa_Week3_Commit,0))+sum(ifnull(nongsa_Week4_Commit,0))+sum(ifnull(nongsa_Week5_Commit,0))+
+					sum(ifnull(nongsa_Week6_Commit,0))+sum(ifnull(nongsa_Week7_Commit,0))+
+					sum(ifnull(nongsa_Week8_Commit,0))+sum(ifnull(nongsa_Week9_Commit,0))+sum(ifnull(nongsa_Week10_Commit,0))+
+					sum(ifnull(nongsa_Week11_Commit,0))+sum(ifnull(nongsa_Week12_Commit,0))+sum(ifnull(nongsa_Week13_Commit,0))+
+					sum(ifnull(gsa_Week2_Commit,0))+sum(ifnull(gsa_Week3_Commit,0))+sum(ifnull(gsa_Week4_Commit,0))+sum(ifnull(gsa_Week5_Commit,0))+
+					sum(ifnull(gsa_Week6_Commit,0))+sum(ifnull(gsa_Week7_Commit,0))+
+					sum(ifnull(gsa_Week8_Commit,0))+sum(ifnull(gsa_Week9_Commit,0))+sum(ifnull(gsa_Week10_Commit,0))+
+					sum(ifnull(gsa_Week11_Commit,0))+sum(ifnull(gsa_Week12_Commit,0))+sum(ifnull(gsa_Week13_Commit,0))+
+					sum(ifnull(forecast_Week2_Commit,0))+sum(ifnull(forecast_Week3_Commit,0))+sum(ifnull(forecast_Week4_Commit,0))+sum(ifnull(forecast_Week5_Commit,0))+
+					sum(ifnull(forecast_Week6_Commit,0))+sum(ifnull(forecast_Week7_Commit,0))+
+					sum(ifnull(forecast_Week8_Commit,0))+sum(ifnull(forecast_Week9_Commit,0))+sum(ifnull(forecast_Week10_Commit,0))+
+					sum(ifnull(forecast_Week11_Commit,0))+sum(ifnull(forecast_Week12_Commit,0))+sum(ifnull(forecast_Week13_Commit,0))+
+					sum(ifnull(system_Week2_Commit,0))+sum(ifnull(system_Week3_Commit,0))+sum(ifnull(system_Week4_Commit,0))+sum(ifnull(system_Week5_Commit,0))+
+					sum(ifnull(system_Week6_Commit,0))+sum(ifnull(system_Week7_Commit,0))+
+					sum(ifnull(system_Week8_Commit,0))+sum(ifnull(system_Week9_Commit,0))+sum(ifnull(system_Week10_Commit,0))+
+					sum(ifnull(system_Week11_Commit,0))+sum(ifnull(system_Week12_Commit,0))+sum(ifnull(system_Week13_Commit,0)))/
+					(sum(ifnull(nongsa_Week2_IRP,0))+sum(ifnull(nongsa_Week3_IRP,0))+sum(ifnull(nongsa_Week4_IRP,0))+sum(ifnull(nongsa_Week5_IRP,0))+
+					sum(ifnull(nongsa_Week6_IRP,0))+sum(ifnull(nongsa_Week7_IRP,0))+
+					sum(ifnull(nongsa_Week8_IRP,0))+sum(ifnull(nongsa_Week9_IRP,0))+sum(ifnull(nongsa_Week10_IRP,0))+
+					sum(ifnull(nongsa_Week11_IRP,0))+sum(ifnull(nongsa_Week12_IRP,0))+sum(ifnull(nongsa_Week13_IRP,0))+
+					sum(ifnull(gsa_Week2_IRP,0))+sum(ifnull(gsa_Week3_IRP,0))+sum(ifnull(gsa_Week4_IRP,0))+sum(ifnull(gsa_Week5_IRP,0))+
+					sum(ifnull(gsa_Week6_IRP,0))+sum(ifnull(gsa_Week7_IRP,0))+
+					sum(ifnull(gsa_Week8_IRP,0))+sum(ifnull(gsa_Week9_IRP,0))+sum(ifnull(gsa_Week10_IRP,0))+
+					sum(ifnull(gsa_Week11_IRP,0))+sum(ifnull(gsa_Week12_IRP,0))+sum(ifnull(gsa_Week13_IRP,0))+
+					sum(ifnull(forecast_Week2_IRP,0))+sum(ifnull(forecast_Week3_IRP,0))+sum(ifnull(forecast_Week4_IRP,0))+sum(ifnull(forecast_Week5_IRP,0))+
+					sum(ifnull(forecast_Week6_IRP,0))+sum(ifnull(forecast_Week7_IRP,0))+
+					sum(ifnull(forecast_Week8_IRP,0))+sum(ifnull(forecast_Week9_IRP,0))+sum(ifnull(forecast_Week10_IRP,0))+
+					sum(ifnull(forecast_Week11_IRP,0))+sum(ifnull(forecast_Week12_IRP,0))+sum(ifnull(forecast_Week13_IRP,0))+
+					sum(ifnull(system_Week2_IRP,0))+sum(ifnull(system_Week3_IRP,0))+sum(ifnull(system_Week4_IRP,0))+sum(ifnull(system_Week5_IRP,0))+
+					sum(ifnull(system_Week6_IRP,0))+sum(ifnull(system_Week7_IRP,0))+
+					sum(ifnull(system_Week8_IRP,0))+sum(ifnull(system_Week9_IRP,0))+sum(ifnull(system_Week10_IRP,0))+
+					sum(ifnull(system_Week11_IRP,0))+sum(ifnull(system_Week12_IRP,0))+sum(ifnull(system_Week13_IRP,0)))*100))),0) as "overall_total_percentage"
+
+from B2B_UAT.IRP_summary where source_supplier=source_supplier_name);
+
+END

@@ -1,0 +1,47 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `cm_wip_fg_qty_mapping`()
+BEGIN
+
+DECLARE finished int default 0;
+DECLARE ori_part_number_v varchar(255);
+DECLARE product_v varchar(255);
+DECLARE qty_v int;
+
+DECLARE fg_qty_mapping CURSOR FOR select sum(nettable_on_hand) as qty,name,f03_part 
+from B2B_UAT.cm_wip_fg_qty group by name;
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
+
+update B2B_UAT.forecast_plan set fg_qty=null where fg_qty is not null;
+
+OPEN fg_qty_mapping;
+	mapping_records: LOOP
+ 	FETCH fg_qty_mapping INTO qty_v,ori_part_number_v,product_v;
+	IF finished = 1 THEN
+		LEAVE mapping_records;
+	END IF;
+    
+    UPDATE B2B_UAT.forecast_plan as fp
+	 SET fp.fg_qty=
+	 (case 
+	 when substring(ori_part_number_v,-3)='GSA' 
+		then replace(ifnull(fp.fg_qty,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.fg_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.fg_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-3)!='GSA' 
+		then replace(ifnull(fp.fg_qty,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.fg_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.fg_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.fg_qty end)
+     where fp.ori_part_number=product_v;
+     
+     END LOOP mapping_records;
+     CLOSE fg_qty_mapping;
+
+
+
+
+
+END

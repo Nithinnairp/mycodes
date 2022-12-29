@@ -1,0 +1,18 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `rr_validation`()
+BEGIN
+insert into B2B_UAT.forecast_validation_rr
+select
+fp.ori_part_number,rr.original_number,fp.prod_week,rr.production_week,fp.prod_year,rr.year,
+fp.forecast_original,rr.forecast_total_demand,fp.gsa_original,rr.firmreq_gsa_total_demand,
+fp.nongsa_original,rr.firmreq_nongsa_total_demand,fp.source_supplier,fp.created_by,fp.created_at,fp.updated_by,fp.updated_at,
+fp.buffer,rr.buffer as rr_buffer,fp.buffer_opt_adj,rr.buffer_opt_adj as rr_buffer_opt_adj,
+fp.on_hand_nettable_si,rr.on_hand_nettable_si as rr_on_hand_nettable_si,
+fp.on_hand_total_cm,rr.on_hand_total_cm as rr_on_hand_total_cm,
+fp.past_due_open_po,rr.past_due_open_po as rr_past_due_open_po,fp.current_open_po,rr.current_open_po as rr_current_open_po
+from B2B_UAT.forecast_plan as fp,B2B_UAT.forecast_RR as rr
+where (fp.source_supplier in (select supplier_name from B2B_UAT.active_suppliers)) 
+and ((fp.ori_part_number=rr.original_number) 
+and (fp.prod_week=rr.production_week) 
+and (fp.prod_year=rr.year));
+
+END

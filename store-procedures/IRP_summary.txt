@@ -1,0 +1,481 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `IRP_summary`(
+IN source_supplier_name varchar(255)
+)
+BEGIN
+
+drop table if exists B2B_UAT.IRP_summary;
+
+create table B2B_UAT.IRP_summary 
+select source_supplier,bu,product_line,product_family,
+nongsa_original,nongsa_adj,nongsa_supply,nongsa_advance_commit_irp,cumulative_nongsa_advance_commit_irp,
+gsa_original,gsa_adj,gsa_supply,gsa_advance_commit_irp,cumulative_gsa_advance_commit_irp,
+forecast_original,forecast_adj,forecast_supply,forecast_advance_commit_irp,cumulative_forecast_advance_commit_irp,
+system_original,system_adj,system_supply,system_advance_commit_irp,cumulative_system_advance_commit_irp,prod_week,process_week,source_supplier_id,
+sum(CASE
+        WHEN prod_week=week(curdate()) THEN null
+    END) as "nongsa_Week1_IRP",    
+sum(CASE
+	WHEN prod_week=week(curdate()) THEN null
+END) as "nongsa_Week1_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week2_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week2_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week3_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week3_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week4_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week4_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week5_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week5_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week6_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week6_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week7_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week7_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)) 
+    END) as "nongsa_Week8_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week8_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week9_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week9_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)) 
+    END) as "nongsa_Week10_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week10_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)) 
+    END) as "nongsa_Week11_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week11_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)) 
+    END) as "nongsa_Week12_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week12_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN if((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))<0,0,ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "nongsa_Week13_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN 
+	IF((ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))>0,
+			IF((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0))>(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_irp,0)+ifnull(cumulative_nongsa_advance_commit_irp,0)),
+			0)
+END) as "nongsa_Week13_Commit" ,
+
+sum(CASE
+        WHEN prod_week=week(curdate()) THEN null
+    END) as "gsa_Week1_IRP",    
+sum(CASE
+	WHEN prod_week=week(curdate()) THEN null
+END) as "gsa_Week1_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week2_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week2_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week3_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week3_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week4_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week4_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week5_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week5_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week6_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week6_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week7_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week7_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0)) 
+    END) as "gsa_Week8_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week8_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week9_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week9_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0)) 
+    END) as "gsa_Week10_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week10_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week11_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week11_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week12_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week12_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN if((ifnull(gsa_original,0)+ifnull(gsa_adj,0))<0,0,ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "gsa_Week13_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN 
+	IF((ifnull(gsa_original,0)+ifnull(gsa_adj,0))>0,
+			IF((ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0))>(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),(ifnull(gsa_original,0)+ifnull(gsa_adj,0)),ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_irp,0)+ifnull(cumulative_gsa_advance_commit_irp,0)),
+			0)
+END) as "gsa_Week13_Commit" ,
+sum(CASE
+        WHEN prod_week=week(curdate()) THEN null
+    END) as "forecast_Week1_IRP",    
+sum(CASE
+	WHEN prod_week=week(curdate()) THEN null
+END) as "forecast_Week1_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week2_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week2_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week3_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week3_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week4_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week4_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+END) as "forecast_Week5_IRP",  
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week5_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week6_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week6_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week7_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week7_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week8_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week8_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week9_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week9_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week10_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week10_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week11_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week11_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "forecast_Week12_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week12_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN if((ifnull(forecast_original,0)+ifnull(forecast_adj,0))<0,0,ifnull(forecast_original,0)+ifnull(forecast_adj,0)) 
+    END) as "forecast_Week13_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN 
+	IF((ifnull(forecast_original,0)+ifnull(forecast_adj,0))>0,
+			IF((ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0))>(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),(ifnull(forecast_original,0)+ifnull(forecast_adj,0)),ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_irp,0)+ifnull(cumulative_forecast_advance_commit_irp,0)),
+			0)
+END) as "forecast_Week13_Commit" ,
+
+sum(CASE
+        WHEN prod_week=week(curdate()) THEN null
+    END) as "system_Week1_IRP",    
+sum(CASE
+	WHEN prod_week=week(curdate()) THEN null
+END) as "system_Week1_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0)) 
+    END) as "system_Week2_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week2_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week3_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*2 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week3_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week4_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*3 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week4_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0)) 
+    END) as "system_Week5_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*4 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week5_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week6_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*5 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week6_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week7_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*6 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week7_Commit",
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week8_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*7 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week8_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week9_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*8 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week9_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0)) 
+    END) as "system_Week10_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*9 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week10_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week11_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*10 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week11_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week12_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*11 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week12_Commit" ,
+sum(CASE
+        WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN if((ifnull(system_original,0)+ifnull(system_adj,0))<0,0,ifnull(system_original,0)+ifnull(system_adj,0))  
+    END) as "system_Week13_IRP",    
+sum(CASE
+	WHEN prod_week=week(date_add(curdate(), interval 7*12 day)) THEN 
+	IF((ifnull(system_original,0)+ifnull(system_adj,0))>0,
+			IF((ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0))>(ifnull(system_original,0)+ifnull(system_adj,0)),(ifnull(system_original,0)+ifnull(system_adj,0)),ifnull(system_supply,0)+ifnull(system_advance_commit_irp,0)+ifnull(cumulative_system_advance_commit_irp,0)),
+			0)
+END) as "system_Week13_Commit" 
+
+FROM B2B_UAT.forecast_plan
+where source_supplier=source_supplier_name and
+dmp_orndmp='DMP' and measurable=1 and countable=1 and `date`>DATE_SUB(DATE(now()), INTERVAL DAYOFWEEK(now())-2 DAY)
+GROUP BY source_supplier,bu,product_line,product_family;
+
+call B2B_UAT.Final_irp_summary(source_supplier_name);
+
+
+END

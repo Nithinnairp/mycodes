@@ -1,0 +1,672 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `Kr_summary_view`()
+BEGIN
+
+drop view if exists B2B_UAT.Kr_summary;
+
+create view B2B_UAT.Kr_summary as
+SELECT source_supplier_id,source_supplier as CM,org as ORG,bu as BU,division as COE,product_line as PL,planner_code as Planner_Code,planner_name as Planner_Name,ori_part_number as Ori_Part_Number,
+cid_mapped_part_number as Cid_Mapped_PartNumber,product_family as Product_Family,'NONGSA' as Demand_category,2 as "sort_order",
+substring_index(substring_index(replace(replace(ifnull(fg_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "FG_Qty",
+null as "Intransit_Qty",
+substring_index(substring_index(replace(replace(ifnull(wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "WIP_Qty",
+substring_index(substring_index(replace(replace(ifnull(pending_assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "Pending_Assy",
+substring_index(substring_index(replace(replace(ifnull(assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "Assy",
+substring_index(substring_index(replace(replace(ifnull(aging,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "Aging",
+substring_index(substring_index(replace(replace(ifnull(button_up,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "Button_Up",
+substring_index(substring_index(replace(replace(ifnull(test,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "Test",
+substring_index(substring_index(replace(replace(ifnull(fvmi,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "FVMI",
+substring_index(substring_index(replace(replace(ifnull(pack,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "Pack",
+substring_index(substring_index(replace(replace(ifnull(fg_logistic,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "FG_Logistic",
+substring_index(substring_index(replace(replace(ifnull(debug,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1) as "Debug",
+null as "Store_Core",
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(nongsa_original,0)+ifnull(nongsa_adj,0) 
+    END) as "Week1_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0)
+    END) as "Week1_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week THEN (ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "Week1_Delta",
+    MAX(CASE
+        WHEN prod_week=process_week THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W1_pr",
+    MAX(CASE
+        WHEN prod_week=process_week THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W1_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W1_cc",
+     MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0),0) 
+    END) as "Week2_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0),0)
+    END) as "Week2_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull((ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0)),0)
+    END) as "Week2_Delta",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W2_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W2_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W2_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(nongsa_original,0)+ifnull(nongsa_adj,0) 
+    END) as "Week3_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0)
+    END) as "Week3_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN (ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "Week3_Delta",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W3_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W3_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W3_cc",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(nongsa_original,0)+ifnull(nongsa_adj,0) 
+    END) as "Week4_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0)
+    END) as "Week4_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN (ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "Week4_Delta", 
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W4_pr",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W4_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W4_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(nongsa_original,0)+ifnull(nongsa_adj,0) 
+    END) as "Week5_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0)
+    END) as "Week5_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN (ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "Week5_Delta", 
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W5_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W5_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W5_cc",
+    
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(nongsa_original,0)+ifnull(nongsa_adj,0) 
+    END) as "Week6_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0)
+    END) as "Week6_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN (ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "Week6_Delta", 
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W6_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W6_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W6_cc",
+    
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(nongsa_original,0)+ifnull(nongsa_adj,0) 
+    END) as "Week7_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0)
+    END) as "Week7_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN (ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "Week7_Delta", 
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W7_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W7_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W7_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(nongsa_original,0)+ifnull(nongsa_adj,0) 
+    END) as "Week8_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0)
+    END) as "Week8_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN (ifnull(nongsa_supply,0)+ifnull(nongsa_advance_commit_kr,0))-(ifnull(nongsa_original,0)+ifnull(nongsa_adj,0))
+    END) as "Week8_Delta",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(nongsa_remarks is null or nongsa_remarks='',null,concat("WW",prod_week,"-",nongsa_remarks))
+    END) as "W8_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(nongsa_cause_code_remark is null or nongsa_cause_code_remark='',null,concat("WW",prod_week,"-",nongsa_cause_code_remark))
+    END) as "W8_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(nongsa_cause_code is null or nongsa_cause_code='',null,concat("WW",prod_week,"-",nongsa_cause_code))
+    END) as "W8_cc"
+FROM B2B_UAT.forecast_plan
+where prod_week between process_week and process_week+7
+and prod_year = substring(year(curdate()),3)
+GROUP BY ori_part_number
+ union
+SELECT source_supplier_id,source_supplier as CM,org as ORG,bu as BU,division as COE,product_line as PL,planner_code as Planner_Code,planner_name as Planner_Name,ori_part_number as Ori_Part_Number,
+cid_mapped_part_number as Cid_Mapped_PartNumber,product_family as Product_Family,'GSA' as Demand_category,1 as "sort_order",
+substring_index(substring_index(replace(replace(ifnull(fg_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "FG_Qty",
+null as "Intransit_Qty",
+substring_index(substring_index(replace(replace(ifnull(wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "WIP_Qty",
+substring_index(substring_index(replace(replace(ifnull(pending_assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "Pending_Assy",
+substring_index(substring_index(replace(replace(ifnull(assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "Assy",
+substring_index(substring_index(replace(replace(ifnull(aging,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "Aging",
+substring_index(substring_index(replace(replace(ifnull(button_up,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "Button_Up",
+substring_index(substring_index(replace(replace(ifnull(test,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "Test",
+substring_index(substring_index(replace(replace(ifnull(fvmi,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "FVMI",
+substring_index(substring_index(replace(replace(ifnull(pack,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "Pack",
+substring_index(substring_index(replace(replace(ifnull(fg_logistic,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "FG_Logistic",
+substring_index(substring_index(replace(replace(ifnull(debug,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1) as "Debug",
+null as "Store_Core",
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week1_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week1_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week1_Delta",
+   MAX(CASE
+        WHEN prod_week=process_week THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W1_pr",
+	MAX(CASE
+        WHEN prod_week=process_week THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W1_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W1_cc",
+	
+     MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week2_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week2_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week2_Delta",
+   MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W2_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W2_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W2_cc",
+    
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week3_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week3_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week3_Delta", 
+	MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W3_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W3_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W3_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week4_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week4_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week4_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W4_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W4_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W4_cc",
+	
+	
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week5_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week5_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week5_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W5_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W5_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W5_cc",
+	
+	
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week6_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week6_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week6_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W6_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W6_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W6_cc",
+	
+	
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week7_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week7_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week7_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W7_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W7_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W7_cc",
+	
+	
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(gsa_original,0)+ifnull(gsa_adj,0) 
+    END) as "Week8_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0)
+    END) as "Week8_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN (ifnull(gsa_supply,0)+ifnull(gsa_advance_commit_kr,0))-(ifnull(gsa_original,0)+ifnull(gsa_adj,0))
+    END) as "Week8_Delta",
+   MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(gsa_remarks is null or gsa_remarks='',null,concat("WW",prod_week,"-",gsa_remarks))
+    END) as "W8_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(gsa_cause_code_remark is null or gsa_cause_code_remark='',null,concat("WW",prod_week,"-",gsa_cause_code_remark))
+    END) as "W8_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(gsa_cause_code is null or gsa_cause_code='',null,concat("WW",prod_week,"-",gsa_cause_code))
+    END) as "W8_cc"
+FROM B2B_UAT.forecast_plan
+where prod_week between process_week and process_week+7
+and prod_year = substring(year(curdate()),3)
+GROUP BY ori_part_number
+union
+SELECT source_supplier_id,source_supplier as CM,org as ORG,bu as BU,division as COE,product_line as PL,planner_code as Planner_Code,planner_name as Planner_Name,ori_part_number as Ori_Part_Number,
+cid_mapped_part_number as Cid_Mapped_PartNumber,product_family as Product_Family,'FORECAST' as Demand_category,3 as "sort_order",
+null as "FG Qty",null as "Intransit Qty",null as "WIP Qty",null as "Pending Assy",null as "Assy",null as "Aging",
+null as "Button Up",null as "Test",null as "FVMI",null as "Pack",null as "FG Logistic",null as "Debug",null as "Store Core",
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week1_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week1_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week1_Delta",
+   MAX(CASE
+        WHEN prod_week=process_week THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W1_pr",
+	MAX(CASE
+        WHEN prod_week=process_week THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W1_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W1_cc",
+     MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week2_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week2_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week2_Delta",
+   MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W2_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W2_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W2_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week3_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week3_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week3_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W3_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W3_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W3_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week4_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week4_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week4_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W4_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W3_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W3_cc",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week5_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week5_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week5_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W5_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W5_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W5_cc",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week6_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week6_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week6_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W6_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W6_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W6_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week7_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week7_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week7_Delta", 
+   MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W7_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W7_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W7_cc",
+	
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(forecast_original,0)+ifnull(forecast_adj,0) 
+    END) as "Week8_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0)
+    END) as "Week8_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN (ifnull(forecast_supply,0)+ifnull(forecast_advance_commit_kr,0))-(ifnull(forecast_original,0)+ifnull(forecast_adj,0))
+    END) as "Week8_Delta",
+   MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(forecast_remarks is null or forecast_remarks='',null,concat("WW",prod_week,"-",forecast_remarks))
+    END) as "W8_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(forecast_cause_code_remark is null or forecast_cause_code_remark='',null,concat("WW",prod_week,"-",forecast_cause_code_remark))
+    END) as "W8_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(forecast_cause_code is null or forecast_cause_code='',null,concat("WW",prod_week,"-",forecast_cause_code))
+    END) as "W8_cc"
+	
+FROM B2B_UAT.forecast_plan
+where prod_week between process_week and process_week+7
+and prod_year = substring(year(curdate()),3)
+GROUP BY ori_part_number
+ union
+SELECT source_supplier_id,source_supplier as CM,org as ORG,bu as BU,division as COE,product_line as PL,planner_code as Planner_Code,planner_name as Planner_Name,ori_part_number as Ori_Part_Number,
+cid_mapped_part_number as Cid_Mapped_PartNumber,product_family as Product_Family,'SYSTEM' as Demand_category,4 as "sort_order",
+null as "FG Qty",null as "Intransit Qty",null as "WIP Qty",null as "Pending Assy",null as "Assy",null as "Aging",
+null as "Button Up",null as "Test",null as "FVMI",null as "Pack",null as "FG Logistic",null as "Debug",null as "Store Core",
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week1_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week1_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week1_Delta",
+	MAX(CASE
+        WHEN prod_week=process_week THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W1_pr",
+	MAX(CASE
+        WHEN prod_week=process_week THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W1_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W1_cc",
+	
+     MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week2_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week2_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week2_Delta",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W2_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W2_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+1 THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W2_cc",
+		
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week3_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week3_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week3_Delta", 
+	MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W3_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W2_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+2 THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W2_cc",
+		
+	MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week4_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week4_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week4_Delta", 
+	MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W4_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W4_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+3 THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W4_cc",
+		
+	MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week5_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week5_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week5_Delta", 
+	MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W5_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W5_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+4 THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W5_cc",
+		
+	
+	MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week6_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week6_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week6_Delta",
+	MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W6_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W6_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+5 THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W6_cc",
+		
+	MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week7_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week7_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week7_Delta", 
+	MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W7_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W7_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+6 THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W7_cc",
+		
+	MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(system_original,0)+ifnull(system_adj,0) 
+    END) as "Week8_KR",    
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0)
+    END) as "Week8_Commit",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN (ifnull(system_supply,0)+ifnull(system_advance_commit_kr,0))-(ifnull(system_original,0)+ifnull(system_adj,0))
+    END) as "Week8_Delta",
+	MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(system_remarks is null or system_remarks='',null,concat("WW",prod_week,"-",system_remarks))
+    END) as "W8_pr",
+	MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(system_cause_code_remark is null or system_cause_code_remark='',null,concat("WW",prod_week,"-",system_cause_code_remark))
+    END) as "W8_ccr",
+    MAX(CASE
+        WHEN prod_week=process_week+7 THEN if(system_cause_code is null or system_cause_code='',null,concat("WW",prod_week,"-",system_cause_code))
+    END) as "W8_cc"
+FROM B2B_UAT.forecast_plan
+where prod_week between process_week and process_week+7
+and prod_year = substring(year(curdate()),3)
+GROUP BY ori_part_number
+ORDER BY ori_part_number,sort_order ASC;
+
+
+END

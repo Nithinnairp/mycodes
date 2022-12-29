@@ -1,0 +1,148 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `Create_Forecast_Plan_With_KR`( 
+	IN part_number VARCHAR(100), IN req_prod_week INT ,IN req_prod_month INT, IN req_prod_year INT, IN current_week INT ,IN current_year INT, 
+    IN is_dmp BOOLEAN, IN dmp_ndmp_stamp VARCHAR(255) ,
+    IN forecast_kr double, IN system_kr double, IN gsa_kr double, IN nongsa_kr double
+    )
+BEGIN
+
+	DECLARE supplier_id int(11) default null;
+	DECLARE bu varchar(255) default null;
+	DECLARE build_type varchar(255) default null;
+	DECLARE dept varchar(255) default null;
+	DECLARE division varchar(255) default null;
+	DECLARE part_planner_code varchar(255) default null;
+	DECLARE part_planner_name varchar(255) default null;
+	DECLARE product_family varchar(255) default null;
+	DECLARE supplier_name varchar(255) default null;
+	DECLARE product_line varchar(255) default null;
+	DECLARE cid_map varchar(255) default null;
+	DECLARE part_site varchar(255) default null;
+	DECLARE instrument varchar(255) default null;
+	DECLARE part_description varchar(255) default null;
+	DECLARE part_item_type varchar(255) default null;
+	DECLARE kr_special_opt_cal varchar(255) default null;
+    DECLARE measureable_flag varchar(255) default null;
+	DECLARE countable_flag varchar(255) default null;
+	DECLARE measureable_flag_tag BOOLEAN default null;
+	DECLARE countable_flag_tag BOOLEAN default null;
+    
+	-- Collect value by reference iodm_part_list and active_suppliers table
+    SELECT supplier.id, pl.bu, pl.build_type, pl.dept, 
+		   pl.division, pl.part_planner_code, pl.part_planner_name,
+           pl.product_line, pl.product_family, pl.supplier_name, pl.cid_map,
+           pl.part_site, pl.instrument, pl.part_description,
+           pl.part_item_type, pl.kr_special_opt_cal, pl.measureable_flag, pl.countable_flag
+    INTO supplier_id, bu, build_type, dept, 
+		 division, part_planner_code, part_planner_name,
+         product_line,product_family, supplier_name, cid_map,
+         part_site, instrument, part_description, 
+         part_item_type, kr_special_opt_cal, measureable_flag, countable_flag
+	from iodm_part_list as pl join active_suppliers as supplier on pl.supplier_name = supplier.supplier_name where part_name=part_number;
+         
+	IF cid_map IS NULL OR cid_map = 'N/A' THEN
+		SET cid_map = part_number;
+    ELSE
+        SET cid_map = part_number;
+    END IF;
+
+    IF countable_flag = 'YES' THEN
+		SET countable_flag_tag = TRUE;
+    ELSE
+        SET countable_flag_tag = FALSE;
+    END IF;
+    
+	IF measureable_flag = 'Y' THEN
+		SET measureable_flag_tag = TRUE;
+    ELSE
+        SET measureable_flag_tag = FALSE;
+    END IF;
+
+-- 	select supplier_id, bu, build_type, dept, 
+-- 		 division, part_planner_code, part_planner_name,
+--          product_line, product_family, supplier_name, cid_map,
+--          part_site, instrument, part_description, part_item_type,
+--          kr_special_opt_cal, measureable_flag_tag, countable_flag_tag,
+--          is_dmp, dmp_ndmp_stamp, req_prod_week , req_prod_month, req_prod_year, current_week, current_year,
+--          forecast_kr, system_kr, gsa_kr, nongsa_kr ,
+--          CONCAT(part_number,"-",req_prod_week,"-",req_prod_year),
+--          CONCAT(req_prod_week,req_prod_year);
+
+    IF (SELECT COUNT(*) FROM forecast_plan where ori_part_number = part_number AND prod_year = req_prod_year AND prod_week = req_prod_week ) = 0 THEN
+		INSERT INTO forecast_plan
+			(
+			bu, buffer, buffer_opt_adj, 
+			build_type, current_open_po, date,
+			dept_code, division, 
+			forecast_adj, forecast_commit, forecast_final, 
+			forecast_original, forecast_supply, forecast_adj_reason,
+			gsa_adj, gsa_commit, gsa_final,
+			gsa_original, gsa_supply,gsa_adj_reason,
+			nongsa_adj, nongsa_commit, nongsa_final,
+			nongsa_original, nongsa_supply, nongsa_adj_reason,
+			system_adj, system_commit, system_final,
+			system_original, system_supply, system_adj_reason,
+			on_hand_nettable_si, on_hand_total_cm, ori_part_number, 
+			past_due_open_po, planner_code, planner_name,
+			prod_month, prod_week, prod_year,
+			prod_year_week, prod_year_month,
+			product_family, received_qty, 
+			source_supplier, source_supplier_id,
+			total_adj, total_commit, total_supply, total_final, total_original, 
+			exception, is_escalated, 
+			forecast_commit1, forecast_commit2, forecast_commit3, forecast_commit4, forecast_exception, 
+			gsa_commit1, gsa_commit2, gsa_commit3, gsa_commit4, gsa_exception, 
+			nongsa_commit1, nongsa_commit2, nongsa_commit3, nongsa_commit4, nongsa_exception, 
+			system_commit1, system_commit2, system_commit3, system_commit4, system_exception, 
+			de_commit, forecast_de_commit, gsa_de_commit, nongsa_de_commit, system_de_commit,
+			created_at, created_by, 
+			product_line, finished_goods, active, 
+			cid_mapped_part_number,
+			dmp_orndmp, is_dmp,
+			org, instrument, description, 
+			item_type, process_week, process_year,
+			old_data, manually_added, cal_option, 
+			measurable, countable, 
+			oripartnumber_week_year,
+			forecast_advance_commit_kr, system_advance_commit_kr, gsa_advance_commit_kr, nongsa_advance_commit_kr,
+            forecast_commit_h, system_commit_h, gsa_commit_h, nongsa_commit_h
+			)
+			VALUES
+			(
+        bu, 0, 0, 
+        build_type, 0, CURDATE(),
+        dept, division, 
+        0, 0, 0, 
+        0, 0, null,
+        0, 0, 0,
+        0, 0, null,
+        0, 0, 0,
+        0, 0, null,
+        0, 0, 0,
+        0, 0, null,
+        0, 0, part_number, 
+        0, part_planner_code, part_planner_name,
+        req_prod_month, req_prod_week, req_prod_year,
+        CONCAT(req_prod_year,req_prod_week), CONCAT(req_prod_year,req_prod_month),
+        product_family, 0, 
+        supplier_name, supplier_id,
+        0, 0, 0, 0, 0,
+        0, FALSE, 
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        NOW(), "2", 
+        product_line, "N", TRUE, 
+        cid_map,
+        dmp_ndmp_stamp, is_dmp,
+        part_site, instrument, part_description, 
+        part_item_type, current_week, current_year,
+        FALSE, TRUE, kr_special_opt_cal, 
+        measureable_flag_tag, countable_flag_tag, 
+        CONCAT(part_number,"-",req_prod_week,"-",req_prod_year),
+        forecast_kr, system_kr, gsa_kr, nongsa_kr,
+        forecast_kr, system_kr, gsa_kr, nongsa_kr
+        );
+	END IF;
+END

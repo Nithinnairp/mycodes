@@ -1,0 +1,162 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `fnc_nad_weekly_processing`()
+BEGIN
+
+
+DECLARE finished int default 0;
+declare final_remark varchar(1000);
+declare fp_remark varchar(1000);
+declare fp_adj varchar(1000);
+declare nad_optional_field1 varchar(1000);
+declare nad_part_number varchar(1000);
+declare nad_destination_si_locator varchar(1000);
+declare nad_qty int;
+declare nad_ww int;
+declare fp_id int;
+
+
+DECLARE remove_adj_lt CURSOR FOR select 
+ fp.id,fp.nongsa_remarks,nad.optional_field1,nad.part_number,nad.kr_qty,nad.ww,nad.destination_si_locator 
+	from B2B_UAT.forecast_plan as fp
+	join (select optional_field1,part_number,kr_qty,ww,need_by_date,destination_si_locator 
+        from 
+        B2B_UAT.non_ascp_request_line as narl 
+        where 
+		narl.line_status in ('Completed','Cancelled') 
+		and
+		(narl.add_adjustment_fnc is not null and narl.add_adjustment_fnc=1) 
+		and (remove_adjustment_fnc is null  or remove_adjustment_fnc=0)
+		and (need_by_date<DATE_SUB(DATE(now()), INTERVAL DAYOFWEEK(now())-2 DAY))) as nad
+	on fp.ori_part_number=nad.part_number and fp.prod_week=week(curdate()) and fp.prod_year=substring(year(nad.need_by_date),3);
+
+
+DECLARE remove_adj_gt CURSOR FOR select 
+ fp.id,fp.nongsa_remarks,nad.optional_field1,nad.part_number,nad.kr_qty,nad.ww,nad.destination_si_locator 
+	from B2B_UAT.forecast_plan as fp
+	join (select optional_field1,part_number,kr_qty,ww,need_by_date,destination_si_locator 
+        from 
+        B2B_UAT.non_ascp_request_line as narl 
+        where 
+		narl.line_status in ('Completed','Cancelled') 
+        and
+		(narl.add_adjustment_fnc is not null and narl.add_adjustment_fnc=1) 
+		and (remove_adjustment_fnc is null  or remove_adjustment_fnc=0)
+		and (need_by_date>DATE_SUB(DATE(now()), INTERVAL DAYOFWEEK(now())+6 DAY))) as nad
+	on fp.ori_part_number=nad.part_number and fp.prod_week=nad.ww and fp.prod_year=substring(year(nad.need_by_date),3);
+
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
+
+-- optional_field1,'-',destination_si_locator,'-Qty-',kr_qty
+
+ OPEN remove_adj_lt;
+ 
+	get_nad_records: LOOP
+ 
+	FETCH remove_adj_lt INTO fp_id,fp_remark,nad_optional_field1,nad_part_number,nad_qty,nad_ww,nad_destination_si_locator;
+	
+	IF finished = 1 THEN
+		LEAVE get_nad_records;
+
+	END IF;
+    UPDATE B2B_UAT.forecast_plan as fp
+	 SET nongsa_adj=ifnull(nongsa_adj,0)-nad_qty,updated_by=concat('NAD_REMOVE_Batch_',curdate()),
+     nongsa_remarks=replace(replace(ifnull(fp_remark,''),concat(nad_optional_field1,'-Qty-',nad_qty),''),',,',','),updated_at=sysdate()
+	 where fp.id=fp_id;
+     
+	END LOOP get_nad_records;
+ 
+ CLOSE remove_adj_lt;
+
+set finished=0;
+
+ OPEN remove_adj_gt;
+ 
+	get_nad_records: LOOP
+ 
+	FETCH remove_adj_gt INTO fp_id,fp_remark,nad_optional_field1,nad_part_number,nad_qty,nad_ww,nad_destination_si_locator;
+	
+	IF finished = 1 THEN
+		LEAVE get_nad_records;
+
+	END IF;
+    UPDATE B2B_UAT.forecast_plan as fp
+	 SET nongsa_adj=ifnull(nongsa_adj,0)-nad_qty,updated_by=concat('NAD_REMOVE_Batch_',curdate()),
+     nongsa_remarks=replace(replace(ifnull(fp_remark,''),concat(nad_optional_field1,'-Qty-',nad_qty),''),',,',','),updated_at=sysdate()
+	 where fp.id=fp_id;
+     
+	END LOOP get_nad_records;
+ 
+ CLOSE remove_adj_gt;
+
+
+-- inserting the records into adjustment_notification table 
+insert into B2B_UAT.adjustment_notification(build_type,business_unit,created_at,created_by,demand_category,dept_code,division,dmp_orndmp,instrument,new_value,old_value,ori_part_number,planner_code,planner_name,process_week,process_year,prod_week,
+prod_year,product_family,product_line,source_supplier,adjustment_reason,planner_remark,`status`)
+select ip.build_type as build_type,ip.bu,sysdate() as created_at,concat('NAD_REMOVE_ADJ_Batch_',curdate()) as created_by,
+'Non GSA' as demand_category,ip.dept as dept_code,ip.division as division,'DMP' as dmp_orndmp,
+ip.instrument as instrument,pri.krqty as new_value,0 as old_value,pri.part_number as ori_part_number,
+ip.part_planner_code as planner_code,ip.part_planner_name as planner_name,week(curdate()) as process_week,year(curdate()) as process_year,
+pri.ww as prod_week,pri.year as prod_year,ip.product_family as product_family,
+ip.product_line as product_line,pri.source_supplier as source_supplier,'NAD' as adjustment_reason,pri.remark as planner_remark,null as `status`
+ from B2B_UAT.iodm_part_list as ip join 
+(select c.part_number,(-1*c.krqty) as krqty,c.remark,c.source_supplier,c.ww,c.year from B2B_UAT.forecast_plan as b join
+	(select ifnull(sum(kr_qty),0) as krqty, narl.part_number as part_number, narl.ww as ww, 
+	substring(year(narl.need_by_date),3) as year,narl.supplier_name as source_supplier,
+	group_concat(narl.optional_field1,'-Qty-',narl.kr_qty) as remark
+	from B2B_UAT.non_ascp_request_line as narl
+	where narl.line_status in ('Completed','Cancelled') 
+	and
+	(narl.add_adjustment_fnc is not null and narl.add_adjustment_fnc=1) 
+	and (remove_adjustment_fnc is null  or remove_adjustment_fnc=0)
+	and (need_by_date<DATE_SUB(DATE(now()), INTERVAL DAYOFWEEK(now())-2 DAY))
+	group by part_number,ww,substring(year(narl.need_by_date),3)) as c
+ on b.ori_part_number=c.part_number
+ where b.prod_week=week(curdate()) and b.prod_year=substring(year(curdate()),3) and b.ori_part_number=c.part_number) as pri
+ on ip.part_name=pri.part_number;
+
+
+insert into B2B_UAT.adjustment_notification(build_type,business_unit,created_at,created_by,demand_category,dept_code,division,dmp_orndmp,instrument,new_value,old_value,ori_part_number,planner_code,planner_name,process_week,process_year,prod_week,
+prod_year,product_family,product_line,source_supplier,adjustment_reason,planner_remark,`status`)
+select ip.build_type as build_type,ip.bu,sysdate() as created_at,concat('NAD_REMOVE_ADJ_Batch_',curdate()) as created_by,
+'Non GSA' as demand_category,ip.dept as dept_code,ip.division as division,'DMP' as dmp_orndmp,
+ip.instrument as instrument,pri.krqty as new_value,0 as old_value,pri.part_number as ori_part_number,
+ip.part_planner_code as planner_code,ip.part_planner_name as planner_name,week(curdate()) as process_week,year(curdate()) as process_year,
+pri.ww as prod_week,pri.year as prod_year,ip.product_family as product_family,
+ip.product_line as product_line,pri.source_supplier as source_supplier,'NAD' as adjustment_reason,pri.remark as planner_remark,null as `status`
+ from B2B_UAT.iodm_part_list as ip join 
+(select c.part_number,(-1*c.krqty) as krqty,c.remark,c.source_supplier,c.ww,c.year from B2B_UAT.forecast_plan as b join
+	(select ifnull(sum(kr_qty),0) as krqty, narl.part_number as part_number, narl.ww as ww, 
+	substring(year(narl.need_by_date),3) as year,narl.supplier_name as source_supplier,
+	group_concat(narl.optional_field1,'-Qty-',narl.kr_qty) as remark
+	from B2B_UAT.non_ascp_request_line as narl
+	where narl.line_status in ('Completed','Cancelled') 
+	and
+	(narl.add_adjustment_fnc is not null and narl.add_adjustment_fnc=1) 
+	and (remove_adjustment_fnc is null  or remove_adjustment_fnc=0)
+	and (need_by_date>DATE_SUB(DATE(now()), INTERVAL DAYOFWEEK(now())+6 DAY))
+	group by part_number,ww,substring(year(narl.need_by_date),3)) as c
+ on b.ori_part_number=c.part_number
+ where b.prod_week=if(c.ww<week(curdate()),week(curdate()),c.ww) and b.prod_year=substring(year(curdate()),3) and b.ori_part_number=c.part_number) as pri
+ on ip.part_name=pri.part_number;
+
+-- updating the remove adjustment fnc flag
+
+update B2B_UAT.non_ascp_request_line as narl
+set narl.remove_adjustment_fnc=1,narl.last_updated_date=sysdate()
+	where narl.line_status in ('Completed','Cancelled') 
+	and
+	(narl.add_adjustment_fnc is not null and narl.add_adjustment_fnc=1) 
+	and (remove_adjustment_fnc is null  or remove_adjustment_fnc=0)
+	and (need_by_date>DATE_SUB(DATE(now()), INTERVAL DAYOFWEEK(now())+6 DAY));
+
+update B2B_UAT.non_ascp_request_line as narl
+set narl.remove_adjustment_fnc=1,narl.last_updated_date=sysdate()
+	where narl.line_status in ('Completed','Cancelled') 
+	and
+	(narl.add_adjustment_fnc is not null and narl.add_adjustment_fnc=1) 
+	and (remove_adjustment_fnc is null  or remove_adjustment_fnc=0)
+	and (need_by_date<DATE_SUB(DATE(now()), INTERVAL DAYOFWEEK(now())-2 DAY));
+
+
+END

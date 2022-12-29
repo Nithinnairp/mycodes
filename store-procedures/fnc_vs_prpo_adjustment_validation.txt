@@ -1,0 +1,224 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `fnc_vs_prpo_adjustment_validation`(IN supplier_name_param VARCHAR(255))
+BEGIN
+
+DECLARE current_monday_date date;
+DECLARE current_process_week int;
+DECLARE current_process_year int;
+DECLARE archive_week int;
+DECLARE min_year_week int;
+DECLARE num_of_weeks int;
+
+-- Get current week's Monday date
+SELECT DATE(FROM_DAYS(TO_DAYS(SYSDATE()) - MOD(TO_DAYS(SYSDATE()) - 2, 7))) 
+INTO current_monday_date 
+FROM DUAL;
+
+-- Get current week and year
+SELECT prod_week, prod_year 
+INTO current_process_week, current_process_year 
+FROM B2B_UAT.keysight_calendar 
+WHERE prod_date = current_monday_date;
+
+-- Get weeks to archive data from config table
+SELECT CAST(value AS UNSIGNED) 
+INTO archive_week 
+FROM B2B_UAT.config 
+WHERE jhi_key = 'fnc-vs-prpo-adj-validation-archive-week';
+
+-- Get weeks to remain in the validation table for reference purpose
+SELECT MIN(CONCAT(process_year, process_week)) 
+INTO min_year_week 
+FROM B2B_UAT.prpo_vs_forecast_validation;
+
+-- Count the number of weeks currently in validation table
+SELECT COUNT(DISTINCT(CONCAT(process_year, process_week))) 
+INTO num_of_weeks 
+FROM B2B_UAT.prpo_vs_forecast_validation;
+
+-- Only store last x weeks of data using a config to determine the weeks to keep
+DELETE FROM B2B_UAT.prpo_vs_forecast_validation 
+WHERE CONCAT(process_year, process_week) = IF(num_of_weeks >= archive_week, min_year_week, '');
+
+-- Remove current week records if there is any and re-insert data later
+DELETE FROM B2B_UAT.prpo_vs_forecast_validation
+WHERE process_week = current_process_week 
+AND process_year = current_process_year
+AND supplier_name = supplier_name_param;
+
+-- STEP 1: INSERT F&C with PRPO data into table
+-- Non-TAA Category
+INSERT INTO B2B_UAT.prpo_vs_forecast_validation(
+planner_name, 
+item_number, 
+supplier_name, 
+need_by_date, 
+process_week, 
+process_year, 
+ww, 
+wy, 
+release_window, 
+demand_category, 
+fnc_adj, 
+buffer, 
+planner_adj_prpo)
+SELECT fp.planner_name, -- planner_name
+po.part_no, -- item_number
+fp.source_supplier, -- supplier_name
+fp.date, -- need_by_date
+current_process_week, -- process_week
+current_process_year, -- process_year
+po.ww, -- ww
+po.wy, -- wy
+po.release_window, -- release_window
+'NON-TAA', -- demand_category
+ifnull(fp.nongsa_adj,0), -- fnc_adj
+ifnull(fp.buffer,0), -- buffer
+SUM(po.planner_adjustment) -- planner_adj_prpo
+FROM B2B_UAT.prpo_plan_view po, B2B_UAT.forecast_plan fp 
+WHERE po.part_no = fp.ori_part_number
+AND po.ww = fp.prod_week
+AND po.wy = fp.prod_year
+AND po.weekly_vs_daily_flag = 'weekly'
+AND (IFNULL(fp.nongsa_adj, 0) != 0 OR IFNULL(fp.buffer, 0) != 0)
+AND fp.date = DATE(FROM_DAYS(TO_DAYS(po.need_by_date) - MOD(TO_DAYS(po.need_by_date) -2, 7))) -- To calculate need by date from prpo to that week's monday date
+AND (po.special_handling is null OR po.special_handling IN ('Common', 'C', 'Z') )
+AND fp.active=1
+AND fp.source_supplier = supplier_name_param
+AND po.process_week = CONCAT(current_process_week, current_process_year)
+GROUP BY fp.planner_name, 
+po.part_no, 
+fp.source_supplier, 
+fp.date, 
+po.ww, po.wy,
+ifnull(fp.nongsa_adj,0), 
+ifnull(fp.buffer,0);
+
+-- TAA Category
+INSERT INTO B2B_UAT.prpo_vs_forecast_validation(
+planner_name, 
+item_number, 
+supplier_name, 
+need_by_date, 
+process_week,
+process_year,
+ww, 
+wy, 
+release_window,
+demand_category,
+fnc_adj, 
+buffer,
+planner_adj_prpo,
+nad_qty)
+SELECT fp.planner_name, -- planner_name
+po.part_no, -- item_number
+fp.source_supplier, -- supplier_name
+fp.date, -- need_by_date
+current_process_week, -- process_week
+current_process_year, -- process_year
+po.ww, -- ww
+po.wy, -- wy
+po.release_window, -- release_window
+'TAA', -- demand_category
+ifnull(fp.gsa_adj,0), -- fnc_adj
+0, -- buffer
+SUM(po.planner_adjustment), -- planner_adj_prpo
+0 -- nad_qty
+FROM B2B_UAT.prpo_plan_view po, B2B_UAT.forecast_plan fp 
+WHERE po.part_no = fp.ori_part_number
+AND po.ww = fp.prod_week
+AND po.wy = fp.prod_year
+AND po.weekly_vs_daily_flag = 'weekly'
+AND IFNULL(fp.gsa_adj, 0) != 0
+AND fp.date = DATE(FROM_DAYS(TO_DAYS(po.need_by_date) -MOD(TO_DAYS(po.need_by_date) -2, 7))) -- To calculate need by date from prpo to that week's monday date
+AND po.special_handling = 'G'
+AND fp.active=1
+AND fp.source_supplier = supplier_name_param
+AND po.process_week = CONCAT(current_process_week, current_process_year)
+group by fp.planner_name, 
+po.part_no, 
+fp.source_supplier, 
+fp.date, 
+po.ww, po.wy, 
+ifnull(fp.gsa_adj,0) 
+having MAX(IFNULL(fp.gsa_adj, 0)) <> SUM(IFNULL(po.planner_adjustment, 0));
+
+-- System Category
+INSERT INTO B2B_UAT.prpo_vs_forecast_validation(
+planner_name, 
+item_number, 
+supplier_name, 
+need_by_date, 
+process_week,
+process_year,
+ww, 
+wy, 
+release_window,
+demand_category,
+fnc_adj, 
+buffer,
+planner_adj_prpo,
+nad_qty)
+SELECT fp.planner_name, -- planner_name
+po.part_no, -- item_number
+fp.source_supplier, -- supplier_name
+fp.date, -- need_by_date
+current_process_week, -- process_week
+current_process_year, -- process_year 
+po.ww, -- ww
+po.wy, -- wy
+po.release_window, -- release_window
+'System', -- demand_category
+ifnull(fp.system_adj,0), -- fnc_adj
+0, -- buffer
+SUM(po.planner_adjustment), -- planner_adj_prpo
+0 -- nad_qty
+FROM B2B_UAT.prpo_plan_view po, B2B_UAT.forecast_plan fp 
+WHERE po.part_no = fp.ori_part_number
+AND po.ww = fp.prod_week
+AND po.wy = fp.prod_year
+AND po.weekly_vs_daily_flag = 'weekly'
+AND IFNULL(fp.system_adj, 0) != 0
+AND fp.date = DATE(FROM_DAYS(TO_DAYS(po.need_by_date) -MOD(TO_DAYS(po.need_by_date) -2, 7))) -- To calculate need by date from prpo to that week's monday date
+AND po.special_handling IN ('A','R','H')
+AND fp.active=1
+AND fp.source_supplier = supplier_name_param
+AND po.process_week = CONCAT(current_process_week, current_process_year)
+group by fp.planner_name, 
+po.part_no, 
+fp.source_supplier, 
+fp.date, 
+po.ww, po.wy, 
+ifnull(fp.system_adj,0) 
+having MAX(IFNULL(fp.system_adj, 0)) <> SUM(IFNULL(po.planner_adjustment, 0));
+
+-- STEP 2: Update NAD QTY from non_ascp_request_line based on curr week monday = need by date (<=) else (=) (Mainly for Non-TAA category adjustment only)
+UPDATE B2B_UAT.prpo_vs_forecast_validation val 
+SET 
+    val.nad_qty = (SELECT 
+            IFNULL(SUM(nad.kr_qty), 0) AS nad_qty
+        FROM
+            B2B_UAT.non_ascp_request_line nad
+        WHERE
+            nad.part_number = val.item_number
+                AND IF(current_monday_date = val.need_by_date, 
+					DATE(FROM_DAYS(TO_DAYS(nad.need_by_date) - MOD(TO_DAYS(nad.need_by_date) - 2, 7))) <= val.need_by_date, 
+                    DATE(FROM_DAYS(TO_DAYS(nad.need_by_date) - MOD(TO_DAYS(nad.need_by_date) - 2, 7))) = val.need_by_date)
+                AND nad.line_status NOT IN ('Cancelled' , 'Completed')
+                AND nad.add_adjustment_fnc = 1
+                AND (nad.remove_adjustment_fnc IS NULL
+                OR nad.remove_adjustment_fnc != 1))
+WHERE val.process_week = current_process_week 
+AND val.process_year = current_process_year
+AND val.supplier_name = supplier_name_param;
+
+-- STEP 3: Determine validation result
+UPDATE B2B_UAT.prpo_vs_forecast_validation val
+SET 
+    val.fc_vs_prpo = IF((IFNULL(val.fnc_adj, 0) + IFNULL(val.buffer, 0) = IFNULL(val.planner_adj_prpo, 0) + IFNULL(val.nad_qty, 0)),
+        'OK',
+        'Review')
+WHERE val.process_week = current_process_week 
+AND val.process_year = current_process_year
+AND val.supplier_name = supplier_name_param;
+
+END

@@ -1,0 +1,228 @@
+CREATE DEFINER=`b2bcollabportal`@`%` PROCEDURE `cm_wip_mapping`()
+BEGIN
+
+DECLARE finished int default 0;
+DECLARE ori_part_number_v varchar(255);
+DECLARE product_v varchar(255);
+DECLARE kr_wip_breakdown_v varchar(255);
+DECLARE qty_v int;
+
+/*DECLARE stn_mapping CURSOR FOR SELECT Product,ori_part_number,b.kr_wip_breakdown, 
+count(DISTINCT serial_number) as total_qty
+FROM B2B_UAT.cm_wip_raw_data as a,B2B_UAT.cm_wip_stn_mapping as b
+WHERE date_created > (SELECT max(date(date_created)) FROM B2B_UAT.cm_wip_raw_data) 
+and upper(b.cm_station_name)=upper(substring_index(a.current_station,':',-1)) 
+GROUP BY Product,ori_part_number,b.kr_wip_breakdown;
+
+DECLARE new_stn_mapping CURSOR FOR SELECT Product,ori_part_number,b.kr_wip_breakdown,
+count(DISTINCT serial_number) as total_qty
+FROM B2B_UAT.cm_wip_raw_data as a,B2B_UAT.cm_wip_stn_mapping as b
+WHERE date_created > (SELECT max(date(date_created)) FROM B2B_UAT.cm_wip_raw_data) 
+and upper(a.current_station) not in (select distinct upper(substring_index(a.current_station,':',-1)) from B2B_UAT.cm_wip_stn_mapping)
+GROUP BY Product,ori_part_number order by 1;*/
+
+DECLARE stn_mapping CURSOR FOR  SELECT Product,ori_part_number,b.kr_wip_breakdown, 
+count(DISTINCT serial_number) as total_qty
+FROM B2B_UAT.cm_wip_raw_data as a,B2B_UAT.cm_wip_stn_mapping as b
+WHERE date_created > (SELECT max(date(date_created)) FROM B2B_UAT.cm_wip_raw_data) 
+and upper(b.cm_station_code)=upper(substring_index(a.current_station,':',1)) 
+GROUP BY Product,ori_part_number,b.kr_wip_breakdown;
+
+
+
+DECLARE new_stn_mapping CURSOR FOR SELECT Product,ori_part_number,b.kr_wip_breakdown,
+count(DISTINCT serial_number) as total_qty
+FROM B2B_UAT.cm_wip_raw_data as a,B2B_UAT.cm_wip_stn_mapping as b
+WHERE date_created > (SELECT max(date(date_created)) FROM B2B_UAT.cm_wip_raw_data) 
+and upper(substring_index(a.current_station,':',1)) not in (select distinct upper(cm_station_code) from B2B_UAT.cm_wip_stn_mapping)
+GROUP BY Product,ori_part_number order by 1;
+
+
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
+
+Update B2B_UAT.forecast_plan set pending_assy=null,
+assy=null,aging=null,button_up=null,test=null,fvmi=null,pack=null,fg_logistic=null,debug=null,wip_qty=null where 
+(assy is not null) or (aging is not null) or (button_up is not null) or (test is not null) or (fvmi is not null) 
+ or (pack is not null) or (fg_logistic is not null) or (debug is not null) or (wip_qty is not null) or 
+ (pending_assy is not null) ;
+
+
+
+OPEN stn_mapping;
+	mapping_records: LOOP
+ 	FETCH stn_mapping INTO product_v,ori_part_number_v,kr_wip_breakdown_v,qty_v;
+	IF finished = 1 THEN
+		LEAVE mapping_records;
+	END IF;
+    
+    UPDATE B2B_UAT.forecast_plan as fp
+	 SET fp.assy=
+	 (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and (kr_wip_breakdown_v='Assy')
+		then replace(ifnull(fp.assy,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and (kr_wip_breakdown_v='Assy')
+		then replace(ifnull(fp.assy,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.assy end),
+      fp.pending_assy =
+      (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and (kr_wip_breakdown_v='RMA')
+		then replace(ifnull(fp.pending_assy,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.pending_assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.pending_assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and (kr_wip_breakdown_v='RMA')
+		then replace(ifnull(fp.pending_assy,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.pending_assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.pending_assy,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.pending_assy end),
+     fp.test=
+     (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and kr_wip_breakdown_v='Test'
+		then replace(ifnull(fp.test,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.test,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.test,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and kr_wip_breakdown_v='Test'
+		then replace(ifnull(fp.test,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.test,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.test,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.test end),
+     fp.fg_logistic=
+     (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and kr_wip_breakdown_v='FG Logistic'
+		then replace(ifnull(fp.fg_logistic,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.fg_logistic,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.fg_logistic,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and kr_wip_breakdown_v='FG Logistic'
+		then replace(ifnull(fp.fg_logistic,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.fg_logistic,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.fg_logistic,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.fg_logistic end),
+	 fp.aging=
+     (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and kr_wip_breakdown_v='Aging'
+		then replace(ifnull(fp.aging,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.aging,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.aging,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and kr_wip_breakdown_v='Aging'
+		then replace(ifnull(fp.aging,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.aging,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.aging,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.aging end),
+	 fp.button_up=
+	 (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and kr_wip_breakdown_v='Button up'
+		then replace(ifnull(fp.button_up,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.button_up,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.button_up,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and kr_wip_breakdown_v='Button up'
+		then replace(ifnull(fp.button_up,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.button_up,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.button_up,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.button_up end),
+	 fp.fvmi=
+	 (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and kr_wip_breakdown_v='FVMI'
+		then replace(ifnull(fp.fvmi,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.fvmi,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.fvmi,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and kr_wip_breakdown_v='FVMI'
+		then replace(ifnull(fp.fvmi,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.fvmi,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.fvmi,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.fvmi end),
+	 fp.pack=
+	 (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and kr_wip_breakdown_v='Pack'
+		then replace(ifnull(fp.pack,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.pack,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.pack,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and kr_wip_breakdown_v='Pack'
+		then replace(ifnull(fp.pack,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.pack,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.pack,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.pack end),
+	 fp.debug=
+	 (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and kr_wip_breakdown_v='Debug'
+		then replace(ifnull(fp.debug,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.debug,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.debug,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and kr_wip_breakdown_v='Debug'
+		then replace(ifnull(fp.debug,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.debug,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.debug,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.debug end),
+     fp.wip_qty=
+     (case 
+	 when substring(ori_part_number_v,-4)='_GSA' and 
+     (kr_wip_breakdown_v in ('Debug','Assy','Test','FG Logistic','Aging','FVMI','Pack','Button up','RMA') or (kr_wip_breakdown_v is null)) 
+		then replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA' and 
+     (kr_wip_breakdown_v in ('Debug','Assy','Test','FG Logistic','Aging','FVMI','Pack','Button up','RMA')  or (kr_wip_breakdown_v is null))
+		then replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.wip_qty end)
+    
+    where fp.ori_part_number=product_v;
+	END LOOP mapping_records;
+
+CLOSE stn_mapping;
+set finished=0;
+OPEN new_stn_mapping;
+	new_mapping_records: LOOP
+ 	FETCH new_stn_mapping INTO product_v,ori_part_number_v,kr_wip_breakdown_v,qty_v;
+	IF finished = 1 THEN
+		LEAVE new_mapping_records;
+	END IF;
+    
+    UPDATE B2B_UAT.forecast_plan as fp
+	 SET fp.wip_qty=
+     (case 
+	 when substring(ori_part_number_v,-4)='_GSA'  
+		then replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),
+		concat('"GSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',1),':',-1)+qty_v))
+	 when substring(ori_part_number_v,-4)!='_GSA'
+		then replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),
+		substring_index(replace(replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),
+		concat('"NONGSA":',substring_index(substring_index(replace(
+		replace(ifnull(fp.wip_qty,'{"GSA":0,"NONGSA":0}'),"{",""),"}",""),',',-1),':',-1)+qty_v))
+     else fp.wip_qty end)
+    
+    where fp.ori_part_number=product_v;
+	END LOOP new_mapping_records;
+
+CLOSE new_stn_mapping;
+
+
+
+END
