@@ -1,0 +1,15 @@
+git clone https://git-codecommit.ap-southeast-1.amazonaws.com/v1/repos/Glue-job
+
+git checkout master
+ git pull Glue-Job
+git status
+git branches
+git add .
+git commit -m 'Glue Job updated'
+
+git push
+git cherry-pick <commit-id>
+git checkout dev
+git add 'validation-function/'
+
+
