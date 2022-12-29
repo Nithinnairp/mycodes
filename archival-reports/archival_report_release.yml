@@ -1,0 +1,467 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: CloudFormation Specification for Archival Report Prod Release
+Resources:
+  prpoPlanArchivalReports:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+        Handler: lambda_function.lambda_handler
+        Runtime: python3.7
+        FunctionName: prpo_plan_archival_reports
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Code: 
+            S3Bucket: ks-lambda-deploy-package-prod
+            S3Key: archival-reports/prod/prpo_plan_reports.zip
+        Description: ''
+        MemorySize: 128
+        Timeout: 600
+        Role: 'arn:aws:iam::603601803076:role/Lambda_Glue_trigger'
+        VpcConfig:
+            SecurityGroupIds:
+                - sg-06b67a7873640d48e
+                - sg-09a368318b0fcec68
+            SubnetIds:
+                - subnet-06a2768406e910cdb
+                - subnet-094d5c9cb3eb87271
+        Layers:
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pymysql:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:xlsxwriter:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pandas:2'
+  poViewArchivalReports:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+        Handler: lambda_function.lambda_handler
+        Runtime: python3.7
+        FunctionName: po_view_archival_reports
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Code: 
+            S3Bucket: ks-lambda-deploy-package-prod
+            S3Key: archival-reports/prod/po_view.zip
+        Description: ''
+        MemorySize: 128
+        Timeout: 600
+        Role: 'arn:aws:iam::603601803076:role/Lambda_Glue_trigger'
+        VpcConfig:
+            SecurityGroupIds:
+                - sg-06b67a7873640d48e
+                - sg-09a368318b0fcec68
+            SubnetIds:
+                - subnet-06a2768406e910cdb
+                - subnet-094d5c9cb3eb87271
+        Layers:
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pymysql:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:xlsxwriter:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pandas:2'
+  nadWorkbenchArchivalReport:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+        Handler: lambda_function.lambda_handler
+        Runtime: python3.7
+        FunctionName: nad_workbench_archival_report
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Code: 
+            S3Bucket: ks-lambda-deploy-package-prod
+            S3Key: archival-reports/prod/nad_workbench.zip
+        Description: ''
+        MemorySize: 128
+        Timeout: 600
+        Role: 'arn:aws:iam::603601803076:role/Lambda_Glue_trigger'
+        VpcConfig:
+            SecurityGroupIds:
+                - sg-06b67a7873640d48e
+                - sg-09a368318b0fcec68
+            SubnetIds:
+                - subnet-06a2768406e910cdb
+                - subnet-094d5c9cb3eb87271
+        Layers:
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pymysql:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:xlsxwriter:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pandas:2'
+  nadApprovalWorkbenchArchivalReport:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+        Handler: lambda_function.lambda_handler
+        Runtime: python3.7
+        FunctionName: nad_approval_workbench_archival_report
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Code: 
+            S3Bucket: ks-lambda-deploy-package-prod
+            S3Key: archival-reports/prod/nad_approval_workbench.zip
+        Description: ''
+        MemorySize: 128
+        Timeout: 600
+        Role: 'arn:aws:iam::603601803076:role/Lambda_Glue_trigger'
+        VpcConfig:
+            SecurityGroupIds:
+                - sg-06b67a7873640d48e
+                - sg-09a368318b0fcec68
+            SubnetIds:
+                - subnet-06a2768406e910cdb
+                - subnet-094d5c9cb3eb87271
+        Layers:
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pymysql:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:xlsxwriter:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pandas:2'
+  soViewArchivalReport:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+        Handler: lambda_function.lambda_handler
+        Runtime: python3.7
+        FunctionName: so_view_archival_report
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Code: 
+            S3Bucket: ks-lambda-deploy-package-prod
+            S3Key: archival-reports/prod/so_view.zip
+        Description: ''
+        MemorySize: 256
+        Timeout: 600
+        Role: 'arn:aws:iam::603601803076:role/Lambda_Glue_trigger'
+        VpcConfig:
+            SecurityGroupIds:
+                - sg-06b67a7873640d48e
+                - sg-09a368318b0fcec68
+            SubnetIds:
+                - subnet-06a2768406e910cdb
+                - subnet-094d5c9cb3eb87271
+        Layers:
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pymysql:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:xlsxwriter:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pandas:2'
+  iodmPartsListArchivalReport:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+        Handler: lambda_function.lambda_handler
+        Runtime: python3.7
+        FunctionName: iodm_parts_list_archival_report
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Code: 
+            S3Bucket: ks-lambda-deploy-package-prod
+            S3Key: archival-reports/prod/iodm_parts_list.zip
+        Description: ''
+        MemorySize: 256
+        Timeout: 900
+        Role: 'arn:aws:iam::603601803076:role/Lambda_Glue_trigger'
+        VpcConfig:
+            SecurityGroupIds:
+                - sg-06b67a7873640d48e
+                - sg-09a368318b0fcec68
+            SubnetIds:
+                - subnet-06a2768406e910cdb
+                - subnet-094d5c9cb3eb87271
+        Layers:
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pymysql:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:xlsxwriter:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pandas:2'
+  specialHandlingCodeArchivalReport:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+        Handler: lambda_function.lambda_handler
+        Runtime: python3.7
+        FunctionName: special_handling_code_archival_report
+        Tags:
+            - Key: "Application"
+              Value: "archival report"
+        Code: 
+            S3Bucket: ks-lambda-deploy-package-prod
+            S3Key: archival-reports/prod/special_handling_code.zip
+        Description: ''
+        MemorySize: 128
+        Timeout: 600
+        Role: 'arn:aws:iam::603601803076:role/Lambda_Glue_trigger'
+        VpcConfig:
+            SecurityGroupIds:
+                - sg-06b67a7873640d48e
+                - sg-09a368318b0fcec68
+            SubnetIds:
+                - subnet-06a2768406e910cdb
+                - subnet-094d5c9cb3eb87271
+        Layers:
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pymysql:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:xlsxwriter:1'
+            - 'arn:aws:lambda:ap-southeast-1:603601803076:layer:pandas:2'
+  Schedule12amSGTRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+        Description: "Schedule Rule for 12am SGT"
+        Name: "Schedule_12am_SGT_daily"
+        ScheduleExpression: "cron(0 16 ? * * *)"
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "poViewArchivalReports"
+                - "Arn"
+            Id: "TargetFunctionV1"
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "nadWorkbenchArchivalReport"
+                - "Arn"
+            Id: "TargetFunctionV2"
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "nadApprovalWorkbenchArchivalReport"
+                - "Arn"
+            Id: "TargetFunctionV3"
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "iodmPartsListArchivalReport"
+                - "Arn"
+            Id: "TargetFunctionV4"
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "specialHandlingCodeArchivalReport"
+                - "Arn"
+            Id: "TargetFunctionV5"
+  Schedule12pmSGTRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+        Description: "Schedule Rule for 12pm SGT"
+        Name: "Schedule_12pm_SGT_daily"
+        ScheduleExpression: "cron(0 4 ? * * *)"
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "iodmPartsListArchivalReport"
+                - "Arn"
+            Id: "TargetFunctionV1"
+  Schedule6pmSGTRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+        Description: "Schedule Rule for 6pm SGT"
+        Name: "Schedule_6pm_SGT_daily"
+        ScheduleExpression: "cron(0 10 ? * * *)"
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "prpoPlanArchivalReports"
+                - "Arn"
+            Id: "TargetFunctionV1"
+            Input: "{\"flag\":\"daily\"}"
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "prpoPlanArchivalReports"
+                - "Arn"
+            Id: "TargetFunctionV2"
+            Input: "{\"flag\":\"weekly\"}"
+  Schedule1230pmSGTRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+        Description: "Schedule Rule for 1230pm SGT"
+        Name: "Schedule_1230pm_SGT_daily"
+        ScheduleExpression: "cron(30 4 ? * * *)"
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "prpoPlanArchivalReports"
+                - "Arn"
+            Id: "TargetFunctionV1"
+            Input: "{\"flag\":\"daily\"}"
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "prpoPlanArchivalReports"
+                - "Arn"
+            Id: "TargetFunctionV2"
+            Input: "{\"flag\":\"weekly\"}"
+  Schedule1150amSGTRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+        Description: "Schedule Rule for 1150am SGT"
+        Name: "Schedule_1150am_SGT_daily"
+        ScheduleExpression: "cron(50 3 ? * * *)"
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "prpoPlanArchivalReports"
+                - "Arn"
+            Id: "TargetFunctionV1"
+            Input: "{\"flag\":\"daily\"}"
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "prpoPlanArchivalReports"
+                - "Arn"
+            Id: "TargetFunctionV2"
+            Input: "{\"flag\":\"weekly\"}"
+  Schedule915amSGTRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+        Description: "Schedule Rule for 915am SGT"
+        Name: "Schedule_915am_SGT_daily"
+        ScheduleExpression: "cron(15 1 ? * * *)"
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "soViewArchivalReport"
+                - "Arn"
+            Id: "TargetFunctionV1"
+  Schedule915pmSGTRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+        Description: "Schedule Rule for 915pm SGT"
+        Name: "Schedule_915pm_SGT_daily"
+        ScheduleExpression: "cron(15 13 ? * * *)"
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "soViewArchivalReport"
+                - "Arn"
+            Id: "TargetFunctionV1"
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "prpoPlanArchivalReports"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule6pmSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda2: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "prpoPlanArchivalReports"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule1230pmSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda3: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "prpoPlanArchivalReports"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule1150amSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda4: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "poViewArchivalReports"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule12amSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda5: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "nadWorkbenchArchivalReport"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule12amSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda6: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "nadApprovalWorkbenchArchivalReport"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule12amSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda7: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "soViewArchivalReport"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule915amSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda8: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "soViewArchivalReport"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule915pmSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda9: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "iodmPartsListArchivalReport"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule12amSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda10: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "iodmPartsListArchivalReport"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule12pmSGTRule"
+                - "Arn"
+  PermissionForEventsToInvokeLambda11: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+        FunctionName: 
+          Ref: "specialHandlingCodeArchivalReport"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+            Fn::GetAtt: 
+                - "Schedule12amSGTRule"
+                - "Arn"
+        
